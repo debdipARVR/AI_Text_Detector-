@@ -1,5 +1,9 @@
 # ClozeCongruence: AI Text Detector & Humanization Engine 🕵️‍♂️⚡
 
+> ### 🚧 **WORK IN PROGRESS (WIP)**
+> **Active Research & Benchmark Validation**: This project is under active development. The multi-pass cloze congruence detection architecture, DeepEval integration, continuous sigmoidal gating, and empirical benchmarks are being evaluated across diverse multi-domain datasets.
+
+[![Status](https://img.shields.io/badge/Status-Work%20in%20Progress%20(WIP)-orange.svg)](#)
 [![CI Test Suite](https://github.com/debdipARVR/AI_Text_Detector-/actions/workflows/ci.yml/badge.svg)](https://github.com/debdipARVR/AI_Text_Detector-/actions)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Streamlit App](https://img.shields.io/badge/UI-Streamlit%20Dashboard-FF4B4B.svg)](https://streamlit.io/)
@@ -7,7 +11,7 @@
 [![Security](https://img.shields.io/badge/Security-Fernet%20AES--128-green.svg)](https://cryptography.io/)
 [![License](https://img.shields.io/badge/license-MIT-purple.svg)](LICENSE)
 
-A statistical AI text detection and humanization platform powered by **Randomized Cloze Masking & Infilling Congruence**, **NVIDIA NIM LLMs**, **Streamlit & FastAPI Dashboards**, and **Fernet Credential Encryption**.
+A statistical and semantic AI text detection platform powered by **Two-Pass Cloze Infilling Congruence** (Pass 2 Alternate & Pass 3 Centroid 3-Sentence Extractions), **DeepEval Meaning Metrics**, **Continuous Sigmoidal Dynamic Gating**, **NVIDIA NIM LLMs**, and **Fernet Credential Security**.
 
 ---
 

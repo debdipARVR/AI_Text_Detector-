@@ -157,17 +157,34 @@ class NvidiaNIMClient:
             "Respond strictly in the JSON format."
         )
 
-        response = self.client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=temperature,
-            max_tokens=1500,
-        )
+        # Retry loop for rate limiting (HTTP 429)
+        max_retries = 3
+        backoff = 6.0
+        raw_content = ""
 
-        raw_content = response.choices[0].message.content or ""
+        for attempt in range(max_retries):
+            try:
+                response = self.client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    temperature=temperature,
+                    max_tokens=1500,
+                )
+                raw_content = response.choices[0].message.content or ""
+                break
+            except Exception as e:
+                err_str = str(e).lower()
+                if ("429" in err_str or "rate" in err_str) and attempt < max_retries - 1:
+                    logger.warning(f"NVIDIA NIM 429 RateLimit, sleeping {backoff}s before retry {attempt+1}/{max_retries}...")
+                    import time
+                    time.sleep(backoff)
+                    backoff *= 1.5
+                else:
+                    raise e
+
         return self._parse_infill_response(raw_content, spans)
 
     def _parse_infill_response(self, content: str, spans: List[MaskedSpan]) -> Dict[str, str]:
