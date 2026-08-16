@@ -1,0 +1,121 @@
+Essay_ID,Domain,Title,AI_Probability_Percent,Verdict,Combined_Congruence_Percent,Pass_2_Congruence_Percent,Pass_3_Congruence_Percent,Pass_Delta,Confidence_Score,Word_Count
+1,Philosophy & Human Nature,Is intelligence more valuable than wisdom?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+2,Philosophy & Human Nature,Does freedom require limits?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+3,Philosophy & Human Nature,Can a society survive without trust?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+4,Philosophy & Human Nature,Are humans naturally cooperative or competitive?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+5,Philosophy & Human Nature,Is suffering necessary for personal growth?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+6,Philosophy & Human Nature,Does happiness have an upper limit?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+7,Philosophy & Human Nature,Should morality evolve with society?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+8,Philosophy & Human Nature,Can people truly change their personality?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+9,Philosophy & Human Nature,Is identity discovered or created?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+10,Philosophy & Human Nature,Is ignorance ever a virtue?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+11,Artificial Intelligence & Technology,Will AI make humans intellectually stronger or weaker?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,322
+12,Artificial Intelligence & Technology,Should AI possess legal rights?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+13,Artificial Intelligence & Technology,Is privacy becoming an outdated concept?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+14,Artificial Intelligence & Technology,Can technology solve problems it creates?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+15,Artificial Intelligence & Technology,The future of work in an AI-driven economy.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,322
+16,Artificial Intelligence & Technology,Should algorithms influence democratic decisions?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+17,Artificial Intelligence & Technology,Will AI replace creativity or redefine it?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+18,Artificial Intelligence & Technology,Is digital immortality desirable?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+19,Artificial Intelligence & Technology,Human enhancement through technology: blessing or threat?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+20,Artificial Intelligence & Technology,Are we becoming dependent rather than empowered by technology?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,325
+21,Psychology,Why do intelligent people make irrational decisions?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+22,Psychology,Can memory be trusted?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+23,Psychology,The psychology of loneliness in the digital age.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,322
+24,Psychology,Why do people fear uncertainty?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+25,Psychology,Is confidence learned or inherited?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+26,Psychology,Does social media distort self-worth?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+27,Psychology,Can habits overcome motivation?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+28,Psychology,The role of boredom in creativity.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+29,Psychology,Why do humans seek meaning?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+30,Psychology,Are emotions obstacles or decision-making tools?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+31,Economics & Society,Is economic growth always beneficial?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+32,Economics & Society,Should wealth have a ceiling?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+33,Economics & Society,Universal Basic Income: necessity or luxury?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+34,Economics & Society,Can capitalism exist without inequality?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+35,Economics & Society,The hidden cost of convenience.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+36,Economics & Society,Is consumerism replacing culture?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+37,Economics & Society,Can economic progress coexist with environmental sustainability?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+38,Economics & Society,Should governments regulate AI monopolies?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+39,Economics & Society,Why do societies tolerate inequality?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+40,Economics & Society,The future of money in a digital world.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,322
+41,Science,Are scientific discoveries morally neutral?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+42,Science,Should humans colonize other planets?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+43,Science,Is consciousness purely biological?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+44,Science,Can science answer every question?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+45,Science,The ethics of genetic engineering.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+46,Science,Does evolution still shape modern humans?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+47,Science,Should humanity pursue immortality?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+48,Science,Climate engineering: solution or dangerous experiment?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+49,Science,The limits of human knowledge.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+50,Science,Is randomness fundamental to the universe?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+51,History,Do great leaders shape history or do circumstances?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,322
+52,History,Can history repeat itself?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+53,History,Why do civilizations collapse?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+54,History,Should historical figures be judged by modern standards?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,322
+55,History,What makes an empire successful?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+56,History,Is war inevitable?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,307
+57,History,How does propaganda shape history?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+58,History,Can history ever be objective?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+59,History,The role of geography in civilization.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+60,History,Lessons modern societies ignore from history.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+61,Ethics,Is lying ever morally justified?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+62,Ethics,Should animals have legal rights?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+63,Ethics,Can punishment create justice?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+64,Ethics,The ethics of surveillance.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+65,Ethics,Should future generations have legal representation?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+66,Ethics,Is censorship ever justified?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+67,Ethics,Can ethical decisions be objective?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+68,Ethics,Is intention more important than outcome?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+69,Ethics,The ethics of autonomous weapons.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+70,Ethics,Should organ donation be mandatory after death?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+71,Environment,Can economic prosperity exist without environmental exploitation?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+72,Environment,Is humanity part of nature or separate from it?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,325
+73,Environment,The ethics of rewilding ecosystems.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+74,Environment,Should climate refugees receive special legal status?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+75,Environment,Can individual action meaningfully fight climate change?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+76,Environment,Is biodiversity more important than economic development?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+77,Environment,The future of sustainable cities.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+78,Environment,Should natural resources belong to humanity?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+79,Environment,Can technology replace conservation?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+80,Environment,Is environmental responsibility a moral obligation?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+81,Education,Should schools prioritize curiosity over examinations?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+82,Education,Is failure the best teacher?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+83,Education,Can online education replace universities?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+84,Education,Should education be customized for every student?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+85,Education,The value of humanities in a technological world.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,322
+86,Education,Does grading harm learning?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+87,Education,Can creativity be taught?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+88,Education,The purpose of education: employment or enlightenment?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+89,Education,Should financial literacy be mandatory in schools?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+90,Education,Is self-education superior to formal education?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+91,Politics & Governance,Is democracy the best form of government?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+92,Politics & Governance,Should voting be mandatory?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+93,Politics & Governance,Can global governance replace nation-states?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+94,Politics & Governance,The balance between national security and personal liberty.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,322
+95,Politics & Governance,Should politicians have term limits?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+96,Politics & Governance,Does power inevitably corrupt?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+97,Politics & Governance,Can corruption ever be eliminated?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+98,Politics & Governance,The role of civil disobedience in democracy.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+99,Politics & Governance,Is meritocracy truly possible?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+100,Politics & Governance,Should the state control key industries?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+101,Literature & Culture,Does art reflect society or shape it?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+102,Literature & Culture,Can literature change human empathy?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+103,Literature & Culture,Is cultural preservation more important than cultural evolution?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,322
+104,Literature & Culture,Does modern culture destroy deep reading?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+105,Literature & Culture,Can tragedy provide joy?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,310
+106,Literature & Culture,The role of myth in modern society.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+107,Literature & Culture,Is originality still possible in art?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+108,Literature & Culture,Does language shape how we think?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+109,Literature & Culture,Can AI create authentic literature?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+110,Literature & Culture,Why do stories matter to humans?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+111,Future & Speculative,What will define humanity in 1000 years?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,319
+112,Future & Speculative,Will artificial superintelligence be benevolent?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+113,Future & Speculative,Can humanity survive interstellar migration?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+114,Future & Speculative,Will post-scarcity eliminate human conflict?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+115,Future & Speculative,Is transhumanism the next stage of human evolution?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,322
+116,Future & Speculative,Will virtual reality replace physical reality?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+117,Future & Speculative,What if we discover extraterrestrial life?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+118,Future & Speculative,Can a machine experience love?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,313
+119,Future & Speculative,The ultimate fate of human consciousness.,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,316
+120,Future & Speculative,What question should future humans never stop asking?,22.6,Likely Human-Authored,30.2,30.5,30.0,0.0,90.0,322
