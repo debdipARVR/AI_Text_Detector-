@@ -215,6 +215,7 @@ class DeepEvalCongruencyEvaluator:
         pair_evaluations: List[Dict[str, Any]] = []
         meaning_scores: List[float] = []
         cos_scores: List[float] = []
+        sem_scores: List[float] = []
         lex_scores: List[float] = []
         comp_scores: List[float] = []
 
@@ -227,12 +228,15 @@ class DeepEvalCongruencyEvaluator:
             meaning_res = self.meaning_metric.measure(test_case)
             m_score = meaning_res["score"]
             c_score = compute_cosine_similarity(orig, pred)
+            s_score = compute_semantic_congruence(orig, pred)
             l_score = compute_lexical_similarity(orig, pred)
 
-            pair_congruence = (0.55 * m_score) + (0.30 * c_score) + (0.15 * l_score)
+            # User specified weights: Meaning (40%), Cosine (40%), Semantic (10%), Lexical (10%)
+            pair_congruence = (0.40 * m_score) + (0.40 * c_score) + (0.10 * s_score) + (0.10 * l_score)
 
             meaning_scores.append(m_score)
             cos_scores.append(c_score)
+            sem_scores.append(s_score)
             lex_scores.append(l_score)
             comp_scores.append(pair_congruence)
 
@@ -242,6 +246,7 @@ class DeepEvalCongruencyEvaluator:
                 "predicted_sentence": pred,
                 "meaning_similarity": round(m_score * 100.0, 1),
                 "semantic_cosine": round(c_score * 100.0, 1),
+                "semantic_similarity": round(s_score * 100.0, 1),
                 "lexical_similarity": round(l_score * 100.0, 1),
                 "congruence_score": round(pair_congruence * 100.0, 1),
                 "reason": meaning_res["reason"],
@@ -249,6 +254,7 @@ class DeepEvalCongruencyEvaluator:
 
         avg_meaning = sum(meaning_scores) / max(1, len(meaning_scores))
         avg_cosine = sum(cos_scores) / max(1, len(cos_scores))
+        avg_sem = sum(sem_scores) / max(1, len(sem_scores))
         avg_lex = sum(lex_scores) / max(1, len(lex_scores))
         avg_comp = sum(comp_scores) / max(1, len(comp_scores))
 
@@ -257,6 +263,7 @@ class DeepEvalCongruencyEvaluator:
         return {
             "meaning_similarity_percent": round(avg_meaning * 100.0, 1),
             "semantic_cosine_percent": round(avg_cosine * 100.0, 1),
+            "semantic_similarity_percent": round(avg_sem * 100.0, 1),
             "lexical_similarity_percent": round(avg_lex * 100.0, 1),
             "congruence_score_percent": round(avg_comp * 100.0, 1),
             "deepeval_score": round(avg_comp, 3),

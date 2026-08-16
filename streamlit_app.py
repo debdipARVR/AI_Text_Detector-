@@ -116,22 +116,33 @@ st.markdown("""
 
 # Preset texts
 PRESETS = {
+    "Manmohan Singh Statesman Essay": (
+        "Dr. Manmohan Singh was one of the most respected economists and political leaders in modern Indian history. "
+        "Known for his calm personality, intellectual honesty, and understated style of leadership, he served as the Prime Minister of India from 2004 to 2014. "
+        "Unlike many politicians who are remembered for powerful speeches and dramatic political personalities, Manmohan Singh was known primarily for his knowledge, integrity, and quiet determination. "
+        "His life represents the journey of a scholar and economist who rose to the highest political office in the country.\n\n"
+        "Manmohan Singh was born on 26 September 1932 in Gah, which was then part of undivided India and is now in Pakistan. "
+        "The Partition of India in 1947 profoundly affected his early life, as his family moved to India. "
+        "Despite difficult circumstances, he pursued education with exceptional dedication. "
+        "He studied economics at Panjab University and later went to the University of Cambridge, where he completed his higher studies. "
+        "He subsequently earned a doctorate in economics from the University of Oxford. "
+        "His academic achievements established him as a distinguished economist long before he entered active politics.\n\n"
+        "Singh held several important positions in India's economic administration. "
+        "He worked with the United Nations and served in various senior positions in the Government of India. "
+        "He also became the Governor of the Reserve Bank of India and later served as India's Finance Minister. "
+        "It was as Finance Minister in 1991 that he became particularly important to India's economic history."
+    ),
     "AI Generated Essay (GPT-4)": (
         "Artificial intelligence has revolutionized modern technological paradigms, playing a crucial role in reshaping industries worldwide. "
         "Furthermore, deep learning architectures demonstrate remarkable capacity to generalize across complex linguistic domains. "
         "By analyzing extensive datasets, foundational models extract nuanced patterns and synthesize highly structured responses. "
         "In conclusion, navigating the multifaceted landscape of generative AI is a testament to the transformative power of computational innovation, fostering continuous advancements across science and society."
     ),
-    "Authentic Human Writing (Casual/Technical)": (
+    "Authentic Human Dev Log (Casual/Technical)": (
         "I spent three sleepless nights debugging that memory leak in our C++ graphics pipeline, only to realize I forgot a single pointer dereference in the vertex shader loop. "
-        "Classic. "
+        "Classic dev mistake. "
         "You'd think after ten years in game dev you'd spot something so stupid right away, but fatigue does funny things to your brain. "
         "Still, watching the frame rate jump from 14 FPS back up to a smooth 120 made the cold coffee entirely worthwhile."
-    ),
-    "Mixed / AI-Assisted Article": (
-        "The adoption of renewable energy technologies has accelerated markedly over the past decade. "
-        "Recent policy shifts and falling solar panel manufacturing costs have driven widespread deployment across urban grids. "
-        "Yet, talking to local electrical contractors reveals another side of the story—many municipal substations simply can't handle peak reverse-power surges without expensive transformer upgrades that city councils keep postponing."
     ),
 }
 
@@ -150,14 +161,15 @@ with st.sidebar:
         help="Primary model for Cloze Sentence Infilling & DeepEval Evaluation"
     )
 
-    st.markdown("#### 🔬 Two-Pass Masking Mode")
+    st.markdown("#### 🔬 Weighted Metric Criteria")
     st.info(
-        "• **Pass 1 (Sparse)**: Removes 1 sentence every 4 lines.\n"
-        "• **Pass 2 (Alternate)**: Removes alternate sentences every 2 lines.\n\n"
-        "**Weights:**\n"
-        "• 55% DeepEval Meaning Similarity (Highest)\n"
-        "• 30% Semantic Cosine Similarity\n"
-        "• 15% Lexical Overlap"
+        "• **Meaning Similarity (DeepEval)**: **40%**\n"
+        "• **Semantic Cosine Similarity**: **40%**\n"
+        "• **Semantic Phrasing Alignment**: **10%**\n"
+        "• **Word & Lexical Overlap**: **10%**\n\n"
+        "**Two-Pass Strategy:**\n"
+        "• **Pass 1**: 1 sentence removed per 4 lines\n"
+        "• **Pass 2**: Alternate sentences every 2 lines"
     )
 
     # API Credentials & Fernet Keys
@@ -178,11 +190,11 @@ with st.sidebar:
     if status["is_live"]:
         st.success(f"🟢 **Live NIM Connected** ({status['masked_key']})")
     else:
-        st.info("🟡 **Offline Simulation Mode** (DeepEval Protocol Active)")
+        st.info("🟡 **Offline Simulation Mode** (Contextual Infill Active)")
 
 # Main Header
 st.markdown('<div class="main-title">Two-Pass DeepEval AI Text Detector 🕵️‍♂️⚡</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Complete Sentence Removal • DeepEval Meaning Similarity (Highest Priority) • Cosine Congruence • Pass 1 & Pass 2 Synthesis</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">Key-Value Paired Sequencing • 40% Meaning • 40% Cosine • 10% Semantic • 10% Lexical</div>', unsafe_allow_html=True)
 
 # App Tabs
 tab_detect, tab_humanize, tab_security = st.tabs([
@@ -198,7 +210,7 @@ with tab_detect:
     col_input, col_results = st.columns([1, 1.25], gap="large")
 
     with col_input:
-        st.subheader("1. Input Paragraph")
+        st.subheader("1. Input Paragraph / Essay")
 
         preset_choice = st.selectbox("Load Sample Preset:", ["-- Custom Input --"] + list(PRESETS.keys()))
         default_text = PRESETS[preset_choice] if preset_choice != "-- Custom Input --" else ""
@@ -206,8 +218,8 @@ with tab_detect:
         input_text = st.text_area(
             "Enter text paragraph to evaluate:",
             value=default_text,
-            height=280,
-            placeholder="Paste complete paragraph here. The detector will execute Pass 1 (1 sentence every 4 lines) and Pass 2 (alternate sentences every 2 lines), prompting NVIDIA NIM to complete the missing sentences..."
+            height=300,
+            placeholder="Paste complete paragraph here. The detector will execute Pass 1 and Pass 2, asking NVIDIA NIM to infill numbered blanks [1], [2], [3] and comparing each pair with 40% Meaning + 40% Cosine weights..."
         )
 
         words_count = len(input_text.strip().split()) if input_text.strip() else 0
@@ -216,10 +228,10 @@ with tab_detect:
         btn_detect = st.button("🚀 Run Two-Pass DeepEval Detection", type="primary", use_container_width=True)
 
     with col_results:
-        st.subheader("2. Two-Pass Evaluation & AI Probability")
+        st.subheader("2. Evaluation & Congruency Breakdown")
 
         if btn_detect and input_text.strip():
-            with st.spinner(f"Executing Pass 1 & Pass 2 with {selected_model} & DeepEval Meaning Metric..."):
+            with st.spinner(f"Executing Key-Value Paired Infilling with {selected_model} & DeepEval Meaning Metric..."):
                 detector = ClozeCongruenceDetector(nim_client=client)
                 res = detector.analyze(
                     text=input_text,
@@ -256,11 +268,11 @@ with tab_detect:
                 st.markdown(f"""
                 <div class="pass-card">
                     <div style="font-size: 1.1rem; font-weight: 700; color: #60a5fa;">Pass 1 Congruence: {pass1['congruence_score']}%</div>
-                    <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">1 sentence removed per 4 lines ({pass1['sentences_masked_count']} sentence)</div>
+                    <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">1 sentence per 4 lines ({pass1['sentences_masked_count']} blanks)</div>
                     <hr style="border-color: #334155; margin: 0.5rem 0;" />
-                    <div>🎯 <b>Meaning Similarity (DeepEval):</b> <span style="color:#f59e0b; font-weight:700;">{pass1['meaning_similarity']}%</span></div>
-                    <div>📐 <b>Semantic Cosine:</b> {pass1['semantic_cosine']}%</div>
-                    <div>🔤 <b>Lexical Overlap:</b> {pass1['lexical_similarity']}%</div>
+                    <div>🎯 <b>Meaning Similarity (40%):</b> <span style="color:#f59e0b; font-weight:700;">{pass1['meaning_similarity']}%</span></div>
+                    <div>📐 <b>Semantic Cosine (40%):</b> <span style="color:#60a5fa; font-weight:700;">{pass1['semantic_cosine']}%</span></div>
+                    <div>🔤 <b>Semantic (10%) / Lexical (10%):</b> {pass1.get('semantic_similarity', 50.0)}% / {pass1['lexical_similarity']}%</div>
                     <div style="margin-top: 0.5rem; font-size: 0.82rem; color: #cbd5e1;"><i>{pass1['deepeval_reason']}</i></div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -270,17 +282,17 @@ with tab_detect:
                 st.markdown(f"""
                 <div class="pass-card">
                     <div style="font-size: 1.1rem; font-weight: 700; color: #60a5fa;">Pass 2 Congruence: {pass2['congruence_score']}%</div>
-                    <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">Sentences removed every 2 lines ({pass2['sentences_masked_count']} sentences)</div>
+                    <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">Alternate sentences every 2 lines ({pass2['sentences_masked_count']} blanks)</div>
                     <hr style="border-color: #334155; margin: 0.5rem 0;" />
-                    <div>🎯 <b>Meaning Similarity (DeepEval):</b> <span style="color:#f59e0b; font-weight:700;">{pass2['meaning_similarity']}%</span></div>
-                    <div>📐 <b>Semantic Cosine:</b> {pass2['semantic_cosine']}%</div>
-                    <div>🔤 <b>Lexical Overlap:</b> {pass2['lexical_similarity']}%</div>
+                    <div>🎯 <b>Meaning Similarity (40%):</b> <span style="color:#f59e0b; font-weight:700;">{pass2['meaning_similarity']}%</span></div>
+                    <div>📐 <b>Semantic Cosine (40%):</b> <span style="color:#60a5fa; font-weight:700;">{pass2['semantic_cosine']}%</span></div>
+                    <div>🔤 <b>Semantic (10%) / Lexical (10%):</b> {pass2.get('semantic_similarity', 50.0)}% / {pass2['lexical_similarity']}%</div>
                     <div style="margin-top: 0.5rem; font-size: 0.82rem; color: #cbd5e1;"><i>{pass2['deepeval_reason']}</i></div>
                 </div>
                 """, unsafe_allow_html=True)
 
             # Infill Sentences Breakdown Table
-            st.markdown("#### 📋 Pass 2 Sentence Infill Breakdown")
+            st.markdown("#### 📋 Sentence Pairwise Comparison Breakdown")
             spans = pass2.get("spans", [])
             if spans:
                 table_data = [
@@ -288,9 +300,11 @@ with tab_detect:
                         "Placeholder": s["placeholder"],
                         "Original Sentence": s["original_sentence"],
                         "NIM Infilled Sentence": s["predicted_sentence"],
-                        "Meaning Similarity (55%)": f"{s['meaning_similarity']}%",
-                        "Semantic Cosine (30%)": f"{s['semantic_cosine']}%",
-                        "Congruence Score": f"{s['congruence']}%",
+                        "Meaning (40%)": f"{s['meaning_similarity']}%",
+                        "Cosine (40%)": f"{s['semantic_cosine']}%",
+                        "Semantic (10%)": f"{s.get('semantic_similarity', 50.0)}%",
+                        "Lexical (10%)": f"{s['lexical_similarity']}%",
+                        "Congruence": f"{s['congruence']}%",
                         "Status": s["status"],
                     }
                     for s in spans

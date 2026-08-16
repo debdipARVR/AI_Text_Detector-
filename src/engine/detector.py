@@ -105,7 +105,9 @@ class ClozeCongruenceDetector:
             sem = compute_semantic_congruence(span.original_text, pred)
             lex = compute_lexical_similarity(span.original_text, pred)
             meaning = compute_meaning_similarity(span.original_text, pred)
-            comp = (0.55 * meaning) + (0.30 * cos) + (0.15 * lex)
+            
+            # Meaning (40%) + Cosine (40%) + Semantic (10%) + Lexical (10%)
+            comp = (0.40 * meaning) + (0.40 * cos) + (0.10 * sem) + (0.10 * lex)
 
             span.cosine_similarity = round(cos * 100.0, 1)
             span.semantic_similarity = round(sem * 100.0, 1)
@@ -148,7 +150,9 @@ class ClozeCongruenceDetector:
             sem = compute_semantic_congruence(span.original_text, pred)
             lex = compute_lexical_similarity(span.original_text, pred)
             meaning = compute_meaning_similarity(span.original_text, pred)
-            comp = (0.55 * meaning) + (0.30 * cos) + (0.15 * lex)
+            
+            # Meaning (40%) + Cosine (40%) + Semantic (10%) + Lexical (10%)
+            comp = (0.40 * meaning) + (0.40 * cos) + (0.10 * sem) + (0.10 * lex)
 
             span.cosine_similarity = round(cos * 100.0, 1)
             span.semantic_similarity = round(sem * 100.0, 1)
@@ -236,12 +240,14 @@ class ClozeCongruenceDetector:
             "metrics": {
                 "meaning_similarity_avg": avg_meaning,
                 "semantic_cosine_avg": avg_cosine,
+                "semantic_similarity_avg": round((0.50 * pass1_eval["semantic_similarity_percent"]) + (0.50 * pass2_eval["semantic_similarity_percent"]), 1),
                 "word_similarity_avg": avg_lexical,
                 "congruence_avg": verdict_data["combined_congruence_score"],
                 "weights": {
-                    "meaning_similarity_weight": "55% (Highest Priority)",
-                    "semantic_cosine_weight": "30%",
-                    "lexical_overlap_weight": "15%",
+                    "meaning_similarity_weight": "40% (DeepEval Meaning)",
+                    "semantic_cosine_weight": "40% (Cosine Similarity)",
+                    "semantic_similarity_weight": "10% (Semantic Alignment)",
+                    "lexical_overlap_weight": "10% (Word Overlap)",
                 },
                 "burstiness": burstiness_info,
             },

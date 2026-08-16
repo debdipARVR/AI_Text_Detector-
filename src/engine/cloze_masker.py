@@ -1,8 +1,9 @@
 """Sentence-Level Cloze Masking Engine for Two-Pass AI Text Detection.
 
-Replaces random word masking with complete sentence extraction:
-- Pass 1 (Sparse): Removes 1 sentence every 4 sentences/lines.
-- Pass 2 (Alternate / Dense): Removes alternate sentences every 2 sentences/lines.
+Extracts complete sentences and replaces them with numbered placeholders [1], [2], [3]...
+Filters out headings, bullet points, Roman numerals, and short titles.
+- Pass 1 (Sparse): Removes 1 sentence every 4 sentences.
+- Pass 2 (Alternate): Removes alternate sentences every 2 sentences.
 """
 
 from __future__ import annotations
@@ -14,7 +15,7 @@ from typing import List, Optional, Tuple
 
 @dataclass
 class MaskedSpan:
-    """Represents a masked complete sentence span within a paragraph."""
+    """Represents a masked complete sentence span with a numbered key [1], [2], etc."""
     mask_id: int
     placeholder: str
     original_text: str
@@ -25,8 +26,8 @@ class MaskedSpan:
     context_suffix: str = ""
     predicted_text: Optional[str] = None
     meaning_similarity: float = 0.0
-    semantic_similarity: float = 0.0
     cosine_similarity: float = 0.0
+    semantic_similarity: float = 0.0
     lexical_similarity: float = 0.0
     composite_congruence: float = 0.0
     status: str = "PENDING"  # PENDING, CONGRUENT, PARTIAL, DIVERGENT
@@ -44,46 +45,52 @@ class ClozeMaskResult:
     masked_words: int = 0
     mask_ratio: float = 0.0
     pass_index: int = 1
-    pass_name: str = "Pass 1 (Sparse - 1 per 4 sentences)"
+    pass_name: str = "Pass 1 (Sparse - 1 sentence per 4 lines)"
 
 
 class ClozeMasker:
-    """Masks complete sentences in structured passes (1 per 4 sentences vs alternate every 2 sentences)."""
+    """Masks complete sentences into [1], [2], [3] placeholder keys."""
 
     def __init__(self, default_mask_rate: float = 0.30):
         self.default_mask_rate = default_mask_rate
 
     @staticmethod
     def split_into_sentences(text: str) -> List[str]:
-        """Split text cleanly into sentences while preserving sentence boundaries and punctuation."""
+        """Split text cleanly into sentences while filtering out empty lines, markdown headers, and Roman numerals."""
         cleaned = text.strip()
         if not cleaned:
             return []
 
-        # Split on sentence terminals (.!?\n) followed by whitespace or capital letters
-        pattern = r'(?<=[.!?])\s+(?=[A-Z0-9"\'])|(?<=\n)\s*'
-        raw_parts = re.split(pattern, cleaned)
+        # Split on paragraph breaks and sentence boundary punctuation followed by spaces or newlines
+        raw_chunks = re.split(r'\n{2,}|\n(?=[A-Z0-9#])', cleaned)
         sentences: List[str] = []
 
-        for p in raw_parts:
-            s = p.strip()
-            if len(s) > 1:
-                sentences.append(s)
+        for chunk in raw_chunks:
+            chunk = chunk.strip()
+            if not chunk:
+                continue
+            
+            # Skip standalone markdown headers (e.g. '# Title') or Roman numerals (e.g. 'V.')
+            if chunk.startswith("#") and len(chunk.split()) < 8:
+                continue
+            if re.match(r'^(?:[IVXLCDM]+\.?|[0-9]+\.?)$', chunk, re.IGNORECASE):
+                continue
 
-        # Fallback if no clear punctuation breaks
+            # Split sentences within chunk by terminal punctuation (.!?), taking care of abbreviations
+            parts = re.split(r'(?<=[.!?])\s+(?=[A-Z0-9"\'])', chunk)
+            for p in parts:
+                s = p.strip()
+                # Exclude trivial non-sentences (< 4 words and no verb structure)
+                if len(s.split()) >= 4 or (len(s.split()) >= 2 and any(w in s.lower() for w in ["is", "was", "are", "were", "has", "had", "became", "served", "born", "died", "held", "faced", "studied"])):
+                    sentences.append(s)
+
         if not sentences and cleaned:
-            # Split by lines or commas if long
-            lines = [l.strip() for l in cleaned.splitlines() if l.strip()]
-            if lines:
-                return lines
             sentences = [cleaned]
 
         return sentences
 
     def mask_pass_1(self, text: str) -> ClozeMaskResult:
-        """Pass 1: Sparse complete sentence removal.
-        Removes 1 sentence for every 4 sentences/lines (e.g. index 1, 5, etc. or index 0 for short text).
-        """
+        """Pass 1: Sparse complete sentence removal (1 sentence removed per 4 sentences)."""
         sentences = self.split_into_sentences(text)
         n = len(sentences)
         if n == 0:
@@ -93,13 +100,11 @@ class ClozeMasker:
         if n == 1:
             masked_indices = [0]
         elif n <= 3:
-            # For 2-3 sentences, mask 1 middle sentence
             masked_indices = [1 if n > 1 else 0]
         else:
-            # 1 sentence removed for every 4 sentences (indices 1, 5, 9...)
+            # 1 sentence removed for every 4 sentences (e.g. index 1, 5, 9...)
             for i in range(1, n, 4):
                 masked_indices.append(i)
-            # Ensure at least one sentence is masked
             if not masked_indices:
                 masked_indices = [1]
 
@@ -112,9 +117,7 @@ class ClozeMasker:
         )
 
     def mask_pass_2(self, text: str) -> ClozeMaskResult:
-        """Pass 2: Alternate sentence removal.
-        Removes alternate sentences every 2 sentences/lines (e.g., indices 0, 2, 4... or 1, 3...).
-        """
+        """Pass 2: Alternate complete sentence removal (sentences removed every 2 sentences)."""
         sentences = self.split_into_sentences(text)
         n = len(sentences)
         if n == 0:
@@ -124,13 +127,14 @@ class ClozeMasker:
         if n == 1:
             masked_indices = [0]
         elif n == 2:
-            # Mask both or 1st for 2 sentences
-            masked_indices = [0, 1] if len(sentences[0].split()) < 15 else [0]
+            masked_indices = [0]
         else:
-            # Alternate sentences removed every 2 sentences (e.g. 0, 2, 4... or 1, 3...)
-            # For standard paragraphs, mask indices 0 and 2 (or 1 and 3)
-            for i in range(0, n, 2):
+            # Alternate sentences removed every 2 sentences (e.g. 1, 3, 5... or 0, 2, 4...)
+            # For essays, masking indices 1, 3, 5... leaves leading topic sentences as context
+            for i in range(1, n, 2):
                 masked_indices.append(i)
+            if not masked_indices:
+                masked_indices = [0]
 
         return self._build_masked_result(
             sentences=sentences,
@@ -159,7 +163,8 @@ class ClozeMasker:
             if idx >= len(sentences):
                 continue
             orig_s = sentences[idx]
-            placeholder = f"[MASK_{mask_counter}]"
+            # Form standard numbered placeholder [1], [2], [3]
+            placeholder = f"[{mask_counter}]"
             masked_sentences[idx] = placeholder
             
             w_count = len(orig_s.split())
@@ -202,7 +207,7 @@ class ClozeMasker:
         mask_rate: Optional[float] = None,
         pass_index: int = 1,
     ) -> ClozeMaskResult:
-        """Convenience method to execute Pass 1 or Pass 2 based on pass_index."""
+        """Convenience method for Pass 1 or Pass 2."""
         if pass_index == 2:
             return self.mask_pass_2(text)
         return self.mask_pass_1(text)
