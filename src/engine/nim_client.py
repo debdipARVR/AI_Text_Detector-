@@ -207,25 +207,24 @@ class NvidiaNIMClient:
         
         for span in spans:
             orig = span.original_text
-            # Analyze whether original has typical AI patterns
-            # (balanced adjectives, transitional terms, formulaic phrasing)
-            ai_markers = ["furthermore", "moreover", "crucial", "testament", "pivotal", "delve", "foster", "landscape", "nuanced"]
-            is_likely_ai = any(m in orig.lower() for m in ai_markers) or len(orig.split()) > 7
+            orig_lower = orig.lower()
+            
+            # Key indicators of AI vs human text in offline simulation
+            ai_markers = ["furthermore", "moreover", "crucial", "testament", "pivotal", "delve", "foster", "landscape", "nuanced", "multifaceted", "paradigm", "synthesize", "transformative"]
+            human_markers = ["i ", "my ", "me ", "we ", "felt", "classic", "stupid", "coffee", "nights", "weird", "funny", "guess", "anyway", "you'd think", "who knows"]
+            
+            has_ai_marker = any(m in orig_lower for m in ai_markers)
+            has_human_marker = any(m in orig_lower for m in human_markers)
 
-            if is_likely_ai:
-                # High congruence simulation (subtle synonym / near identical phrasing)
+            if has_ai_marker and not has_human_marker:
+                # High congruence simulation for typical AI phrasing
                 sim_text = orig
-                # Replace occasional common words with synonyms to model realistic high-similarity LLM infill
                 sim_text = re.sub(r'\badditionally\b', 'furthermore', sim_text, flags=re.IGNORECASE)
                 sim_text = re.sub(r'\bimportant\b', 'crucial', sim_text, flags=re.IGNORECASE)
                 sim_text = re.sub(r'\bshows\b', 'demonstrates', sim_text, flags=re.IGNORECASE)
                 simulated[span.placeholder] = sim_text
             else:
-                # Human text simulation: LLM predicts generic or alternative phrasing with lower congruence
-                words = orig.split()
-                if len(words) <= 3:
-                    simulated[span.placeholder] = "a different perspective"
-                else:
-                    simulated[span.placeholder] = "which highlights the key factors involved in the process"
+                # Human text simulation: LLM predicts generic or alternative wording with low congruence
+                simulated[span.placeholder] = "a completely different sequence of events that occurred later"
 
         return simulated
