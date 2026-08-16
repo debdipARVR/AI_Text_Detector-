@@ -58,7 +58,7 @@ Traditional perplexity detectors often suffer from high false-positive rates on 
 ## ✨ Features
 
 - 🎯 **Randomized Cloze Infilling Congruence**: Multi-pass Monte Carlo clause and sentence masking.
-- 🚀 **NVIDIA NIM Integration**: Connects to NVIDIA NIM endpoints (`meta/llama-3.3-70b-instruct`, `nvidia/llama-3.1-nemotron-70b-instruct`, `mistralai/mixtral-8x22b-instruct`, `sarvamai/sarvam-m`).
+- 🚀 **NVIDIA NIM Integration**: Connects to NVIDIA NIM endpoints (`z-ai/glm-5.2`, `thinkingmachines/inkling`, `meta/llama-3.3-70b-instruct`, `nvidia/llama-3.1-nemotron-70b-instruct`, `sarvamai/sarvam-m`).
 - 🖥️ **Dual Interactive Dashboards**:
   - **Streamlit Web App**: Full-featured interactive data app with heatmap visualizers and model controls.
   - **FastAPI Playground**: High-performance REST API with embedded dark-theme dashboard.

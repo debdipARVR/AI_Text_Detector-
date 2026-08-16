@@ -48,7 +48,7 @@ class NvidiaLLM_Understanding(DeepEvalBaseLLM):
 
     def __init__(
         self,
-        model_name: str = "meta/llama-3.3-70b-instruct",
+        model_name: str = "z-ai/glm-5.2",
         api_key: Optional[str] = None,
         encrypted_token: Optional[str] = None,
         fernet_key: Optional[str] = None,
@@ -131,7 +131,7 @@ class DeepEvalCongruencyEvaluator:
 
     def __init__(
         self,
-        model_name: str = "meta/llama-3.3-70b-instruct",
+        model_name: str = "z-ai/glm-5.2",
         api_key: Optional[str] = None,
         encrypted_token: Optional[str] = None,
         fernet_key: Optional[str] = None,

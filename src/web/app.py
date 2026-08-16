@@ -51,7 +51,7 @@ class DetectRequest(BaseModel):
     text: str = Field(..., min_length=5, description="Input text to evaluate")
     mask_rate: float = Field(0.30, ge=0.10, le=0.50, description="Cloze masking percentage")
     num_passes: int = Field(2, ge=1, le=5, description="Monte Carlo passes count")
-    model_name: Optional[str] = Field("meta/llama-3.3-70b-instruct", description="NVIDIA NIM model")
+    model_name: Optional[str] = Field("z-ai/glm-5.2", description="NVIDIA NIM model")
     temperature: float = Field(0.0, ge=0.0, le=1.0, description="Infill temperature")
     raw_api_key: Optional[str] = Field(None, description="Optional plaintext NVIDIA NIM API key")
     encrypted_token: Optional[str] = Field(None, description="Encrypted Fernet token")
@@ -61,7 +61,7 @@ class DetectRequest(BaseModel):
 class HumanizeRequest(BaseModel):
     text: str = Field(..., min_length=5, description="Text to humanize")
     domain: str = Field("academic", description="Target domain profile")
-    model_name: Optional[str] = Field("meta/llama-3.3-70b-instruct", description="NVIDIA NIM model")
+    model_name: Optional[str] = Field("z-ai/glm-5.2", description="NVIDIA NIM model")
     temperature: float = Field(0.75, ge=0.1, le=1.2, description="Generation temperature")
     raw_api_key: Optional[str] = Field(None, description="Optional plaintext API key")
     encrypted_token: Optional[str] = Field(None, description="Encrypted Fernet token")

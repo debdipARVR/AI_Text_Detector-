@@ -1,7 +1,8 @@
 """NVIDIA NIM API Client for Cloze-Infilling and Congruence Evaluation.
 
 Integrates with NVIDIA NIM endpoints (https://integrate.api.nvidia.com/v1)
-with support for LLaMA-3.3-70B, Nemotron-70B, Mixtral-8x22B, and offline simulation fallback.
+with support for z-ai/glm-5.2, thinkingmachines/inkling, LLaMA-3.3-70B, Nemotron-70B,
+and offline simulation fallback.
 """
 
 from __future__ import annotations
@@ -18,25 +19,31 @@ from .cloze_masker import MaskedSpan
 
 logger = logging.getLogger(__name__)
 
-# Standard NVIDIA NIM model options
+# Standard NVIDIA NIM model options updated with z-ai/glm-5.2 & thinkingmachines/inkling
 NVIDIA_MODELS = [
+    {
+        "id": "z-ai/glm-5.2",
+        "name": "Z-AI GLM-5.2",
+        "category": "Primary Infiller & Reasoning",
+        "description": "High-capacity reasoning model with state-of-the-art context understanding and precise cloze prediction.",
+    },
+    {
+        "id": "thinkingmachines/inkling",
+        "name": "ThinkingMachines Inkling",
+        "category": "High Efficiency Specialist",
+        "description": "Optimized language generation engine tailored for nuanced linguistic syntax and cloze completion.",
+    },
     {
         "id": "meta/llama-3.3-70b-instruct",
         "name": "Meta LLaMA 3.3 70B Instruct",
-        "category": "Flagship Infiller",
-        "description": "State-of-the-art general reasoning, high context awareness, and natural syntax infilling.",
+        "category": "General Flagship",
+        "description": "Broad domain knowledge, high context awareness, and natural syntax infilling.",
     },
     {
         "id": "nvidia/llama-3.1-nemotron-70b-instruct",
         "name": "NVIDIA Nemotron 70B Instruct",
         "category": "NVIDIA High Accuracy",
         "description": "NVIDIA's customized model optimized for precise instruction-following and nuanced context.",
-    },
-    {
-        "id": "mistralai/mixtral-8x22b-instruct",
-        "name": "Mistral Mixtral 8x22B Instruct",
-        "category": "High Capacity MoE",
-        "description": "Massive Mixture-of-Experts architecture with multilingual and complex syntactic capability.",
     },
     {
         "id": "sarvamai/sarvam-m",
@@ -46,7 +53,7 @@ NVIDIA_MODELS = [
     },
 ]
 
-DEFAULT_NIM_MODEL = "meta/llama-3.3-70b-instruct"
+DEFAULT_NIM_MODEL = "z-ai/glm-5.2"
 NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
 
 
@@ -168,11 +175,9 @@ class NvidiaNIMClient:
 
         # 1. Try direct JSON parsing
         try:
-            # Strip markdown code blocks if wrapped
             json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
             json_str = json_match.group(1) if json_match else content
             
-            # Find outermost brackets if surrounded by other text
             start = json_str.find("{")
             end = json_str.rfind("}")
             if start != -1 and end != -1:
@@ -186,7 +191,7 @@ class NvidiaNIMClient:
         except Exception:
             pass
 
-        # 2. Fallback to regex extraction: "[MASK_1]": "..." or [MASK_1]: ...
+        # 2. Fallback to regex extraction
         for span in spans:
             if span.placeholder not in predictions:
                 escaped = re.escape(span.placeholder)
@@ -195,7 +200,7 @@ class NvidiaNIMClient:
                 if m:
                     predictions[span.placeholder] = m.group(1).strip().strip('"').strip("'")
 
-        # 3. Fill missing ones with a default placeholder if model skipped
+        # 3. Fill missing ones with default original
         for span in spans:
             if span.placeholder not in predictions or not predictions[span.placeholder]:
                 predictions[span.placeholder] = span.original_text
@@ -210,7 +215,6 @@ class NvidiaNIMClient:
             orig = span.original_text
             orig_lower = orig.lower()
             
-            # Key indicators of AI vs human text in offline simulation
             ai_markers = ["furthermore", "moreover", "crucial", "testament", "pivotal", "delve", "foster", "landscape", "nuanced", "multifaceted", "paradigm", "synthesize", "transformative"]
             human_markers = ["i ", "my ", "me ", "we ", "felt", "classic", "stupid", "coffee", "nights", "weird", "funny", "guess", "anyway", "you'd think", "who knows"]
             
@@ -218,14 +222,12 @@ class NvidiaNIMClient:
             has_human_marker = any(m in orig_lower for m in human_markers)
 
             if has_ai_marker and not has_human_marker:
-                # High congruence simulation for typical AI phrasing
                 sim_text = orig
                 sim_text = re.sub(r'\badditionally\b', 'furthermore', sim_text, flags=re.IGNORECASE)
                 sim_text = re.sub(r'\bimportant\b', 'crucial', sim_text, flags=re.IGNORECASE)
                 sim_text = re.sub(r'\bshows\b', 'demonstrates', sim_text, flags=re.IGNORECASE)
                 simulated[span.placeholder] = sim_text
             else:
-                # Human text simulation: LLM predicts generic or alternative wording with low congruence
                 simulated[span.placeholder] = "a completely different sequence of events that occurred later"
 
         return simulated

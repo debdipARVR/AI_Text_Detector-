@@ -22,7 +22,8 @@ def test_models_endpoint():
     assert response.status_code == 200
     models = response.json()
     assert isinstance(models, list)
-    assert any(m["id"] == "meta/llama-3.3-70b-instruct" for m in models)
+    assert any(m["id"] == "z-ai/glm-5.2" for m in models)
+    assert any(m["id"] == "thinkingmachines/inkling" for m in models)
 
 
 def test_encrypt_endpoint():
@@ -47,7 +48,7 @@ def test_detect_endpoint():
             "text": sample_text,
             "mask_rate": 0.30,
             "num_passes": 1,
-            "model_name": "meta/llama-3.3-70b-instruct",
+            "model_name": "z-ai/glm-5.2",
             "temperature": 0.0,
             "raw_api_key": "",
         },

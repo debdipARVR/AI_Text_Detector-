@@ -21,7 +21,7 @@ def main():
     det_parser.add_argument("--file", "-f", type=str, help="Path to text file to evaluate")
     det_parser.add_argument("--mask-rate", "-m", type=float, default=0.30, help="Cloze mask rate (0.10 - 0.50)")
     det_parser.add_argument("--passes", "-p", type=int, default=2, help="Number of Monte Carlo passes")
-    det_parser.add_argument("--model", type=str, default="meta/llama-3.3-70b-instruct", help="NVIDIA NIM model ID")
+    det_parser.add_argument("--model", type=str, default="z-ai/glm-5.2", help="NVIDIA NIM model ID")
     det_parser.add_argument("--json", action="store_true", help="Output full JSON results")
 
     # 2. humanize command
