@@ -1,5 +1,4 @@
-"""Streamlit Web Application for Two-Pass ClozeCongruence AI Text Detector with DeepEval Meaning & Structural Metadata."""
-
+import json
 import os
 import sys
 from pathlib import Path
@@ -413,50 +412,78 @@ with tab_benchmark:
         "(Cognitive Science, Economics, Distributed Systems, Philosophy of Mind, Genetics, and History)."
     )
 
-    bm_json_path = os.path.join("data", "benchmark_results", "benchmark_results.json")
-    if os.path.exists(bm_json_path):
-        with open(bm_json_path, "r", encoding="utf-8") as f:
-            bm_data = json.load(f)
+    benchmark_view = st.radio(
+        "Select Benchmark Dataset:",
+        ["240-Essay Dual Corpus (120 AI vs 120 Human)", "120 Conceptual Essays Benchmark", "15-Essay Benchmark & Ablations"],
+        horizontal=True
+    )
 
-        m = bm_data["metrics"]
-        m_col1, m_col2, m_col3, m_col4, m_col5 = st.columns(5)
-        m_col1.metric("Precision", f"{m['precision']}%", "Zero False Accusations")
-        m_col2.metric("Human FPR", f"{m['fpr']}%", "0.0% False Positives")
-        m_col3.metric("F1-Score", f"{m['f1_score']}%")
-        m_col4.metric("ROC-AUC", f"{m['roc_auc']}")
-        m_col5.metric("Accuracy", f"{m['accuracy']}%")
+    if benchmark_view == "240-Essay Dual Corpus (120 AI vs 120 Human)":
+        c240_path = os.path.join("data", "benchmark_results", "corpus_240_results.json")
+        if os.path.exists(c240_path):
+            with open(c240_path, "r", encoding="utf-8") as f:
+                c240_data = json.load(f)
+            m = c240_data["metrics"]
+            m_col1, m_col2, m_col3, m_col4, m_col5 = st.columns(5)
+            m_col1.metric("Precision", f"{m['precision']}%", "120/121 Positives True AI")
+            m_col2.metric("Human FPR", f"{m['false_positive_rate']}%", "119/120 Humans Protected")
+            m_col3.metric("Recall (TPR)", f"{m['recall']}%", "100% AI Caught")
+            m_col4.metric("ROC-AUC", f"{m['roc_auc']}")
+            m_col5.metric("Accuracy", f"{m['accuracy']}%")
 
-        st.markdown("#### 🔬 Ablation Comparison Table")
-        ablation = bm_data.get("ablation", {})
-        ablation_rows = []
-        for k, v in ablation.items():
-            ablation_rows.append({
-                "Architecture Variant": k.replace("_", " "),
-                "Accuracy": f"{v['accuracy']}%",
-                "F1-Score": f"{v['f1_score']}%",
-                "ROC-AUC": f"{v['roc_auc']}",
-                "Human FPR": f"{v['fpr']}%",
-                "Precision": f"{v['precision']}%",
-            })
-        st.table(ablation_rows)
+            st.markdown("#### 🌐 Performance Across 6 Domain Groups (40 Essays Each)")
+            dg_table = []
+            for gname, gdata in c240_data["domain_groups"].items():
+                dg_table.append({
+                    "Domain Group": gname,
+                    "AI Mean Prob": f"{gdata['ai_avg_ai_prob']}%",
+                    "AI Congruence": f"{gdata['ai_avg_congruence']}%",
+                    "AI Recall (TPR)": f"{gdata['ai_detection_tpr']}%",
+                    "Human Mean Prob": f"{gdata['human_avg_ai_prob']}%",
+                    "Human Congruence": f"{gdata['human_avg_congruence']}%",
+                    "Human FPR": f"{gdata['human_false_positive_rate']}%",
+                })
+            st.table(dg_table)
 
-        st.markdown("#### 📁 Individual Benchmark Records")
-        records_table = [
-            {
-                "ID": r["id"],
-                "Domain": r["domain"],
-                "True Label": r["ground_truth_label"],
-                "Predicted Verdict": r["predicted_verdict"],
-                "AI Prob": f"{r['ai_probability']}%",
-                "Combined Congruence": f"{r['combined_congruence']}%",
-                "Pass 2": f"{r['pass_2_congruence']}%",
-                "Pass 3": f"{r['pass_3_congruence']}%",
-            }
-            for r in bm_data["records"]
-        ]
-        st.dataframe(records_table, use_container_width=True)
+            st.markdown("#### 📁 Individual Essay Records (240 Total)")
+            st.dataframe(c240_data["records"], use_container_width=True)
+
+    elif benchmark_view == "120 Conceptual Essays Benchmark":
+        c120_path = os.path.join("data", "benchmark_results", "120_essays_scores.json")
+        if os.path.exists(c120_path):
+            with open(c120_path, "r", encoding="utf-8") as f:
+                c120_data = json.load(f)
+            st.markdown(f"**Total Evaluated**: {c120_data['total_evaluated_essays']} essays across 12 domains in {c120_data['elapsed_seconds']}s")
+            st.dataframe(c120_data["essays"], use_container_width=True)
+
     else:
-        st.info("Run `python scripts/run_academic_benchmark.py` to populate benchmark results.")
+        bm_json_path = os.path.join("data", "benchmark_results", "benchmark_results.json")
+        if os.path.exists(bm_json_path):
+            with open(bm_json_path, "r", encoding="utf-8") as f:
+                bm_data = json.load(f)
+
+            m = bm_data["metrics"]
+            m_col1, m_col2, m_col3, m_col4, m_col5 = st.columns(5)
+            m_col1.metric("Precision", f"{m['precision']}%", "Zero False Accusations")
+            m_col2.metric("Human FPR", f"{m['fpr']}%", "0.0% False Positives")
+            m_col3.metric("F1-Score", f"{m['f1_score']}%")
+            m_col4.metric("ROC-AUC", f"{m['roc_auc']}")
+            m_col5.metric("Accuracy", f"{m['accuracy']}%")
+
+            st.markdown("#### 🔬 Ablation Comparison Table")
+            ablation = bm_data.get("ablation", {})
+            ablation_rows = []
+            for k, v in ablation.items():
+                ablation_rows.append({
+                    "Architecture Variant": k.replace("_", " "),
+                    "Accuracy": f"{v['accuracy']}%",
+                    "F1-Score": f"{v['f1_score']}%",
+                    "ROC-AUC": f"{v['roc_auc']}",
+                    "Human FPR": f"{v['fpr']}%",
+                    "Precision": f"{v['precision']}%",
+                })
+            st.table(ablation_rows)
+            st.dataframe(bm_data["records"], use_container_width=True)
 
 # =========================================================================
 # TAB 4: LATEX RESEARCH PAPER VIEWER
