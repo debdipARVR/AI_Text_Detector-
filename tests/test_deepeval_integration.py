@@ -6,7 +6,6 @@ from src.engine.nim_client import NvidiaNIMClient
 
 
 def test_deepeval_evaluator_creation():
-    # Test with z-ai/glm-5.2 and thinkingmachines/inkling
     evaluator_glm = NvidiaLLM_Understanding(model_name="z-ai/glm-5.2", api_key="")
     assert evaluator_glm.get_model_name() == "z-ai/glm-5.2"
     
@@ -27,11 +26,12 @@ def test_deepeval_congruency_metric_evaluation():
         original_expected="Artificial intelligence has revolutionized modern technological paradigms, playing a crucial role in reshaping industries worldwide.",
     )
     
-    assert "deepeval_score" in res
-    assert "deepeval_reason" in res
+    assert "meaning_similarity_percent" in res
+    assert "semantic_cosine_percent" in res
+    assert "congruence_score_percent" in res
     assert "framework" in res
-    assert res["framework"] == "DeepEval GEval"
-    assert res["deepeval_score_percent"] >= 0.0
+    assert "DeepEval" in res["framework"]
+    assert res["meaning_similarity_percent"] >= 0.0
     assert res["evaluator_model"] == "z-ai/glm-5.2"
 
 
@@ -42,10 +42,12 @@ def test_detector_with_deepeval_framework():
         "Furthermore, artificial intelligence plays a crucial role in modern computational paradigms. "
         "Moreover, navigating the multifaceted landscape of deep learning fosters transformative breakthroughs."
     )
-    res = detector.analyze(text, mask_rate=0.30, num_passes=1, model_name="z-ai/glm-5.2")
+    res = detector.analyze(text, mask_rate=0.30, num_passes=2, model_name="z-ai/glm-5.2")
     
     assert "deepeval_evaluation" in res
-    assert "geval_score" in res["deepeval_evaluation"]
-    assert "reason" in res["deepeval_evaluation"]
-    assert res["deepeval_evaluation"]["framework"] == "DeepEval GEval"
+    assert "meaning_similarity_score" in res["deepeval_evaluation"]
+    assert "combined_congruence" in res["deepeval_evaluation"]
+    assert "pass_1" in res
+    assert "pass_2" in res
+    assert "DeepEval" in res["deepeval_evaluation"]["framework"]
     assert res["parameters"]["model_name"] == "z-ai/glm-5.2"

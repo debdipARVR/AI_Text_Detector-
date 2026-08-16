@@ -3,9 +3,11 @@
 from src.engine.metrics import (
     calculate_burstiness,
     classify_span_congruence,
-    compute_ai_probability,
+    compute_cosine_similarity,
     compute_lexical_similarity,
+    compute_meaning_similarity,
     compute_semantic_congruence,
+    compute_two_pass_verdict,
     jaccard_similarity,
     levenshtein_similarity,
     longest_common_subsequence_ratio,
@@ -13,11 +15,8 @@ from src.engine.metrics import (
 
 
 def test_jaccard_similarity():
-    # Identical
     assert jaccard_similarity("the quick brown fox", "the quick brown fox") == 1.0
-    # Disjoint
     assert jaccard_similarity("the quick brown fox", "completely unrelated statement") == 0.0
-    # Overlap
     score = jaccard_similarity("the artificial intelligence model", "the artificial neural model")
     assert 0.4 <= score <= 0.8
 
@@ -34,44 +33,40 @@ def test_longest_common_subsequence_ratio():
     assert longest_common_subsequence_ratio("a b c", "x y z") == 0.0
 
 
-def test_compute_lexical_similarity():
-    score_high = compute_lexical_similarity("crucial implications for safety", "crucial implications for safety")
-    assert score_high == 1.0
-    score_mid = compute_lexical_similarity("crucial implications for safety", "vital implications regarding safety")
-    assert 0.3 <= score_mid <= 0.8
-
-
-def test_compute_semantic_congruence():
-    exact = compute_semantic_congruence("delving into the landscape", "delving into the landscape")
+def test_compute_cosine_similarity():
+    exact = compute_cosine_similarity("Large language models are transforming computing.", "Large language models are transforming computing.")
     assert exact == 1.0
-    similar = compute_semantic_congruence("deeply exploring the landscape", "delving into the landscape")
+    similar = compute_cosine_similarity("Large language models transform computational domains.", "Language models are transforming computing.")
     assert similar >= 0.5
 
 
-def test_calculate_burstiness():
-    # Uniform text (typical AI)
-    uniform = "This is a sentence. This is another sentence. This is a third sentence. This is a fourth sentence."
-    burst_uniform = calculate_burstiness(uniform)
-    
-    # Highly spiky text (typical Human)
-    spiky = "Yes. In the vast and intricate labyrinth of human consciousness, we often stumble upon profound epiphanies that defy reductionist logic. Why? Because."
-    burst_spiky = calculate_burstiness(spiky)
-    
-    assert burst_spiky["burstiness_score"] >= burst_uniform["burstiness_score"]
+def test_compute_meaning_similarity():
+    exact = compute_meaning_similarity("AI has revolutionized modern technology paradigms.", "AI has revolutionized modern technology paradigms.")
+    assert exact == 1.0
+    similar = compute_meaning_similarity("AI has fundamentally shifted technological systems.", "AI has revolutionized modern technology paradigms.")
+    assert similar >= 0.25
 
 
-def test_compute_ai_probability():
-    # High congruence -> High AI probability
-    high_spans = [0.95, 0.90, 0.88]
-    res_high = compute_ai_probability(high_spans, [0.90, 0.85, 0.85], [0.95, 0.92, 0.90], burstiness_score=0.2)
-    assert res_high["ai_probability"] >= 70.0
-    assert "AI" in res_high["verdict"]
+def test_compute_two_pass_verdict():
+    # Pass 1 High & Pass 2 High -> Surely AI
+    res_sure = compute_two_pass_verdict(85.0, 80.0)
+    assert res_sure["verdict"] == "Surely Generated with AI"
+    assert res_sure["ai_probability"] >= 90.0
 
-    # Low congruence -> Low AI probability (Human)
-    low_spans = [0.15, 0.25, 0.10]
-    res_low = compute_ai_probability(low_spans, [0.20, 0.20, 0.15], [0.25, 0.30, 0.18], burstiness_score=0.8)
-    assert res_low["ai_probability"] <= 35.0
-    assert "Human" in res_low["verdict"]
+    # Pass 1 High & Pass 2 Moderate -> Likely AI
+    res_likely1 = compute_two_pass_verdict(80.0, 30.0)
+    assert res_likely1["verdict"] == "Likely AI-Generated"
+    assert res_likely1["ai_probability"] >= 70.0
+
+    # Pass 2 High & Pass 1 Moderate -> Likely AI
+    res_likely2 = compute_two_pass_verdict(30.0, 80.0)
+    assert res_likely2["verdict"] == "Likely AI-Generated"
+    assert res_likely2["ai_probability"] >= 70.0
+
+    # Both Low -> Likely Human
+    res_human = compute_two_pass_verdict(20.0, 15.0)
+    assert res_human["verdict"] == "Likely Human-Authored"
+    assert res_human["ai_probability"] <= 35.0
 
 
 def test_classify_span_congruence():

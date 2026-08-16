@@ -1,7 +1,11 @@
-"""Cloze Congruence AI Text Detector powered by DeepEval Framework.
+"""Two-Pass Complete Sentence Cloze Congruence AI Text Detector with DeepEval.
 
-The master detection engine combining randomized span masking, NVIDIA NIM
-cloze infilling, DeepEval GEval framework metrics, and multi-dimensional congruence scoring.
+Executes two structured sentence-level masking passes:
+- Pass 1 (Sparse): Removes 1 sentence every 4 lines.
+- Pass 2 (Alternate): Removes alternate sentences every 2 lines.
+
+Evaluates propositional Meaning Similarity (Highest Priority via DeepEval),
+Semantic Cosine Similarity, and Lexical Overlap for both passes.
 """
 
 from __future__ import annotations
@@ -10,20 +14,22 @@ import html
 import re
 from typing import Any, Dict, List, Optional
 
-from .cloze_masker import ClozeMasker, MaskedSpan
+from .cloze_masker import ClozeMasker, ClozeMaskResult, MaskedSpan
 from .metrics import (
     calculate_burstiness,
     classify_span_congruence,
-    compute_ai_probability,
+    compute_cosine_similarity,
     compute_lexical_similarity,
+    compute_meaning_similarity,
     compute_semantic_congruence,
+    compute_two_pass_verdict,
 )
 from .nim_client import NvidiaNIMClient
 from ..deepeval_model_connect import DeepEvalCongruencyEvaluator
 
 
 class ClozeCongruenceDetector:
-    """Detects AI-generated text using the DeepEval framework and NVIDIA NIM cloze infill congruence."""
+    """Two-Pass Complete Sentence AI Text Detector powered by DeepEval Meaning Metrics and NVIDIA NIM."""
 
     def __init__(
         self,
@@ -43,21 +49,22 @@ class ClozeCongruenceDetector:
         self,
         text: str,
         mask_rate: Optional[float] = None,
-        num_passes: Optional[int] = None,
+        num_passes: Optional[int] = 2,
         model_name: Optional[str] = None,
         temperature: float = 0.0,
     ) -> Dict[str, Any]:
-        """Perform end-to-end Cloze Congruence AI detection on the input text.
+        """Perform Two-Pass Sentence Cloze AI detection on input text.
         
         Args:
-            text: Input text to analyze
-            mask_rate: Fraction of words to mask (0.10 to 0.50, default 0.30)
-            num_passes: Number of randomized Monte Carlo masking passes (1 to 5)
-            model_name: NVIDIA NIM model name
+            text: Input text/paragraph to analyze
+            mask_rate: Unused (kept for compatibility)
+            num_passes: Number of passes (1 or 2, default 2)
+            model_name: NVIDIA NIM model (default: z-ai/glm-5.2)
             temperature: LLM temperature (0.0 for deterministic infill)
             
         Returns:
-            Dictionary containing DeepEval evaluation, AI probability, metrics, and visual HTML
+            Dictionary containing Pass 1, Pass 2, Meaning Similarity, Cosine Similarity,
+            Congruency Scores, and Two-Pass Final Verdict.
         """
         cleaned_text = text.strip()
         if not cleaned_text:
@@ -68,166 +75,214 @@ class ClozeCongruenceDetector:
                 "error": "Input text is empty.",
             }
 
-        passes_count = num_passes or self.default_passes
-        passes_count = max(1, min(5, passes_count))
-        
-        rate = mask_rate if mask_rate is not None else self.masker.default_mask_rate
-        rate = max(0.10, min(0.50, rate))
-
-        # Calculate stylometric burstiness
         burstiness_info = calculate_burstiness(cleaned_text)
+        model = model_name or self.nim_client.default_model
 
-        all_span_congruences: List[float] = []
-        all_lexical_sims: List[float] = []
-        all_semantic_sims: List[float] = []
-        primary_spans: List[MaskedSpan] = []
-        primary_masked_text: str = ""
-        primary_infilled_reconstructed: str = ""
+        # =========================================================================
+        # PASS 1: Sparse Complete Sentence Masking (1 sentence per 4 lines)
+        # =========================================================================
+        pass1_mask = self.masker.mask_pass_1(cleaned_text)
+        pass1_preds = self.nim_client.infill_cloze_spans(
+            masked_text=pass1_mask.masked_text,
+            spans=pass1_mask.spans,
+            model_name=model,
+            temperature=temperature,
+        )
 
-        pass_runs: List[Dict[str, Any]] = []
+        pass1_orig_sentences: List[str] = []
+        pass1_pred_sentences: List[str] = []
+        pass1_reconstructed = pass1_mask.masked_text
 
-        for p_idx in range(passes_count):
-            mask_result = self.masker.mask_text(
-                cleaned_text,
-                mask_rate=rate,
-                pass_index=p_idx,
-            )
+        for span in pass1_mask.spans:
+            pred = pass1_preds.get(span.placeholder, span.original_text)
+            span.predicted_text = pred
+            pass1_reconstructed = pass1_reconstructed.replace(span.placeholder, pred)
 
-            # Infill with NVIDIA NIM
-            predictions = self.nim_client.infill_cloze_spans(
-                masked_text=mask_result.masked_text,
-                spans=mask_result.spans,
-                model_name=model_name,
-                temperature=temperature,
-            )
+            pass1_orig_sentences.append(span.original_text)
+            pass1_pred_sentences.append(pred)
 
-            # Reconstruct infilled text
-            reconstructed_text = mask_result.masked_text
-            for span in mask_result.spans:
-                pred = predictions.get(span.placeholder, span.original_text)
-                span.predicted_text = pred
-                reconstructed_text = reconstructed_text.replace(span.placeholder, pred)
+            cos = compute_cosine_similarity(span.original_text, pred)
+            sem = compute_semantic_congruence(span.original_text, pred)
+            lex = compute_lexical_similarity(span.original_text, pred)
+            meaning = compute_meaning_similarity(span.original_text, pred)
+            comp = (0.55 * meaning) + (0.30 * cos) + (0.15 * lex)
 
-                lex_sim = compute_lexical_similarity(span.original_text, pred)
-                sem_sim = compute_semantic_congruence(span.original_text, pred)
-                composite = (0.55 * sem_sim) + (0.45 * lex_sim)
+            span.cosine_similarity = round(cos * 100.0, 1)
+            span.semantic_similarity = round(sem * 100.0, 1)
+            span.lexical_similarity = round(lex * 100.0, 1)
+            span.meaning_similarity = round(meaning * 100.0, 1)
+            span.composite_congruence = round(comp * 100.0, 1)
+            span.status = classify_span_congruence(comp)
 
-                span.lexical_similarity = round(lex_sim * 100.0, 1)
-                span.semantic_similarity = round(sem_sim * 100.0, 1)
-                span.composite_congruence = round(composite * 100.0, 1)
-                span.status = classify_span_congruence(composite)
+        # DeepEval Meaning & Congruence Evaluation for Pass 1
+        pass1_eval = self.deepeval_evaluator.evaluate_sentence_pairs(
+            masked_context=pass1_mask.masked_text,
+            infilled_sentences=pass1_pred_sentences,
+            original_sentences=pass1_orig_sentences,
+        )
 
-                all_span_congruences.append(composite)
-                all_lexical_sims.append(lex_sim)
-                all_semantic_sims.append(sem_sim)
+        # =========================================================================
+        # PASS 2: Alternate Complete Sentence Masking (Sentences every 2 lines)
+        # =========================================================================
+        pass2_mask = self.masker.mask_pass_2(cleaned_text)
+        pass2_preds = self.nim_client.infill_cloze_spans(
+            masked_text=pass2_mask.masked_text,
+            spans=pass2_mask.spans,
+            model_name=model,
+            temperature=temperature,
+        )
 
-            if p_idx == 0:
-                primary_spans = mask_result.spans
-                primary_masked_text = mask_result.masked_text
-                primary_infilled_reconstructed = reconstructed_text
+        pass2_orig_sentences: List[str] = []
+        pass2_pred_sentences: List[str] = []
+        pass2_reconstructed = pass2_mask.masked_text
 
-            pass_runs.append({
-                "pass_index": p_idx + 1,
-                "masked_text": mask_result.masked_text,
-                "reconstructed_text": reconstructed_text,
-                "spans_count": len(mask_result.spans),
-                "masked_words": mask_result.masked_words,
+        for span in pass2_mask.spans:
+            pred = pass2_preds.get(span.placeholder, span.original_text)
+            span.predicted_text = pred
+            pass2_reconstructed = pass2_reconstructed.replace(span.placeholder, pred)
+
+            pass2_orig_sentences.append(span.original_text)
+            pass2_pred_sentences.append(pred)
+
+            cos = compute_cosine_similarity(span.original_text, pred)
+            sem = compute_semantic_congruence(span.original_text, pred)
+            lex = compute_lexical_similarity(span.original_text, pred)
+            meaning = compute_meaning_similarity(span.original_text, pred)
+            comp = (0.55 * meaning) + (0.30 * cos) + (0.15 * lex)
+
+            span.cosine_similarity = round(cos * 100.0, 1)
+            span.semantic_similarity = round(sem * 100.0, 1)
+            span.lexical_similarity = round(lex * 100.0, 1)
+            span.meaning_similarity = round(meaning * 100.0, 1)
+            span.composite_congruence = round(comp * 100.0, 1)
+            span.status = classify_span_congruence(comp)
+
+        # DeepEval Meaning & Congruence Evaluation for Pass 2
+        pass2_eval = self.deepeval_evaluator.evaluate_sentence_pairs(
+            masked_context=pass2_mask.masked_text,
+            infilled_sentences=pass2_pred_sentences,
+            original_sentences=pass2_orig_sentences,
+        )
+
+        # =========================================================================
+        # TWO-PASS SYNTHESIS & FINAL VERDICT
+        # =========================================================================
+        p1_score = pass1_eval["congruence_score_percent"]
+        p2_score = pass2_eval["congruence_score_percent"]
+        verdict_data = compute_two_pass_verdict(p1_score, p2_score)
+
+        # Combined Meaning & Cosine Metrics
+        avg_meaning = round((0.50 * pass1_eval["meaning_similarity_percent"]) + (0.50 * pass2_eval["meaning_similarity_percent"]), 1)
+        avg_cosine = round((0.50 * pass1_eval["semantic_cosine_percent"]) + (0.50 * pass2_eval["semantic_cosine_percent"]), 1)
+        avg_lexical = round((0.50 * pass1_eval["lexical_similarity_percent"]) + (0.50 * pass2_eval["lexical_similarity_percent"]), 1)
+
+        # Render highlighted HTML snippet
+        highlighted_html = self._render_highlighted_html(cleaned_text, pass2_mask.spans)
+
+        return {
+            "ai_probability": verdict_data["ai_probability"],
+            "verdict": verdict_data["verdict"],
+            "confidence": verdict_data["confidence"],
+            "combined_congruence_score": verdict_data["combined_congruence_score"],
+            "two_pass_verdict_reason": verdict_data["reason"],
+            "pass_1": {
+                "name": "Pass 1 (Sparse: 1 sentence removed per 4 lines)",
+                "sentences_masked_count": pass1_mask.masked_sentences_count,
+                "masked_text": pass1_mask.masked_text,
+                "reconstructed_text": pass1_reconstructed,
+                "meaning_similarity": pass1_eval["meaning_similarity_percent"],
+                "semantic_cosine": pass1_eval["semantic_cosine_percent"],
+                "lexical_similarity": pass1_eval["lexical_similarity_percent"],
+                "congruence_score": pass1_eval["congruence_score_percent"],
+                "deepeval_reason": pass1_eval["reason"],
                 "spans": [
                     {
                         "placeholder": s.placeholder,
-                        "original": s.original_text,
-                        "predicted": s.predicted_text,
+                        "original_sentence": s.original_text,
+                        "predicted_sentence": s.predicted_text,
+                        "meaning_similarity": s.meaning_similarity,
+                        "semantic_cosine": s.cosine_similarity,
                         "lexical_similarity": s.lexical_similarity,
-                        "semantic_similarity": s.semantic_similarity,
                         "congruence": s.composite_congruence,
                         "status": s.status,
                     }
-                    for s in mask_result.spans
+                    for s in pass1_mask.spans
                 ],
-            })
-
-        # DeepEval Framework Evaluation on LLMTestCase
-        deepeval_result = self.deepeval_evaluator.evaluate_test_case(
-            masked_input=primary_masked_text,
-            infilled_actual=primary_infilled_reconstructed,
-            original_expected=cleaned_text,
-        )
-
-        # Calculate final AI Probability combining span congruence, DeepEval GEval, and burstiness
-        ai_prob_data = compute_ai_probability(
-            span_congruences=all_span_congruences,
-            lexical_similarities=all_lexical_sims,
-            semantic_similarities=all_semantic_sims,
-            burstiness_score=burstiness_info["burstiness_score"],
-        )
-
-        # Blend DeepEval GEval metric with cloze statistics
-        geval_score = deepeval_result["deepeval_score_percent"]
-        final_ai_prob = round((0.60 * ai_prob_data["ai_probability"]) + (0.40 * geval_score), 1)
-
-        # Re-evaluate verdict with DeepEval blend
-        if final_ai_prob >= 72.0:
-            verdict = "Likely AI-Generated"
-            confidence = "High" if final_ai_prob >= 85.0 else "Moderate"
-        elif final_ai_prob >= 45.0:
-            verdict = "Mixed / AI-Assisted or Edited"
-            confidence = "Moderate"
-        else:
-            verdict = "Likely Human-Authored"
-            confidence = "High" if final_ai_prob <= 25.0 else "Moderate"
-
-        # Generate interactive HTML snippet with visual highlights
-        highlighted_html = self._render_highlighted_html(cleaned_text, primary_spans)
-
-        return {
-            "ai_probability": final_ai_prob,
-            "verdict": verdict,
-            "confidence": confidence,
-            "deepeval_evaluation": {
-                "framework": "DeepEval GEval",
-                "geval_score": geval_score,
-                "is_congruent": deepeval_result["is_congruent"],
-                "reason": deepeval_result["deepeval_reason"],
-                "evaluator_model": deepeval_result["evaluator_model"],
+            },
+            "pass_2": {
+                "name": "Pass 2 (Alternate: sentences removed every 2 lines)",
+                "sentences_masked_count": pass2_mask.masked_sentences_count,
+                "masked_text": pass2_mask.masked_text,
+                "reconstructed_text": pass2_reconstructed,
+                "meaning_similarity": pass2_eval["meaning_similarity_percent"],
+                "semantic_cosine": pass2_eval["semantic_cosine_percent"],
+                "lexical_similarity": pass2_eval["lexical_similarity_percent"],
+                "congruence_score": pass2_eval["congruence_score_percent"],
+                "deepeval_reason": pass2_eval["reason"],
+                "spans": [
+                    {
+                        "placeholder": s.placeholder,
+                        "original_sentence": s.original_text,
+                        "predicted_sentence": s.predicted_text,
+                        "meaning_similarity": s.meaning_similarity,
+                        "semantic_cosine": s.cosine_similarity,
+                        "lexical_similarity": s.lexical_similarity,
+                        "congruence": s.composite_congruence,
+                        "status": s.status,
+                    }
+                    for s in pass2_mask.spans
+                ],
             },
             "metrics": {
-                "semantic_similarity_avg": ai_prob_data["semantic_similarity_avg"],
-                "word_similarity_avg": ai_prob_data["lexical_similarity_avg"],
-                "congruence_avg": ai_prob_data["congruence_avg"],
-                "congruent_ratio": ai_prob_data["congruent_ratio"],
-                "congruent_spans_count": ai_prob_data["congruent_spans_count"],
-                "total_spans_count": ai_prob_data["total_spans_count"],
+                "meaning_similarity_avg": avg_meaning,
+                "semantic_cosine_avg": avg_cosine,
+                "word_similarity_avg": avg_lexical,
+                "congruence_avg": verdict_data["combined_congruence_score"],
+                "weights": {
+                    "meaning_similarity_weight": "55% (Highest Priority)",
+                    "semantic_cosine_weight": "30%",
+                    "lexical_overlap_weight": "15%",
+                },
                 "burstiness": burstiness_info,
             },
+            "deepeval_evaluation": {
+                "framework": "DeepEval Meaning & Congruence Framework",
+                "meaning_similarity_score": avg_meaning,
+                "semantic_cosine_score": avg_cosine,
+                "combined_congruence": verdict_data["combined_congruence_score"],
+                "geval_score": verdict_data["combined_congruence_score"],
+                "reason": f"Pass 1: {pass1_eval['reason']} | Pass 2: {pass2_eval['reason']}",
+                "evaluator_model": model,
+                "pass1_reason": pass1_eval["reason"],
+                "pass2_reason": pass2_eval["reason"],
+            },
             "parameters": {
-                "mask_rate": rate,
-                "num_passes": passes_count,
-                "model_name": model_name or self.nim_client.default_model,
+                "model_name": model,
                 "client_mode": self.nim_client.get_status()["mode"],
                 "is_live_api": self.nim_client.is_live,
-                "evaluation_framework": "DeepEval GEval + NVIDIA NIM",
+                "evaluation_framework": "DeepEval Custom Meaning Metric + Cosine Similarity",
             },
-            "primary_masked_text": primary_masked_text,
-            "reconstructed_text": primary_infilled_reconstructed,
+            "primary_masked_text": pass2_mask.masked_text,
+            "reconstructed_text": pass2_reconstructed,
             "spans": [
                 {
                     "id": s.mask_id,
                     "placeholder": s.placeholder,
                     "original": s.original_text,
                     "predicted": s.predicted_text,
-                    "lexical_similarity": s.lexical_similarity,
+                    "meaning_similarity": s.meaning_similarity,
                     "semantic_similarity": s.semantic_similarity,
+                    "lexical_similarity": s.lexical_similarity,
                     "congruence": s.composite_congruence,
                     "status": s.status,
                 }
-                for s in primary_spans
+                for s in pass2_mask.spans
             ],
-            "passes_details": pass_runs,
             "highlighted_html": highlighted_html,
         }
 
     def _render_highlighted_html(self, original_text: str, spans: List[MaskedSpan]) -> str:
-        """Render annotated HTML with colored inline tags for each evaluated span."""
+        """Render annotated HTML with colored sentence tags."""
         if not spans:
             return html.escape(original_text)
 
@@ -240,12 +295,16 @@ class ClozeCongruenceDetector:
                 "span-partial" if s.status == "PARTIAL" else "span-divergent"
             )
             
-            tooltip = f"Original: &quot;{escaped_orig}&quot; &#10;AI Infill: &quot;{escaped_pred}&quot; &#10;Congruence: {s.composite_congruence}% ({s.status})"
+            tooltip = (
+                f"Original: {escaped_orig}&#10;"
+                f"NIM Infill: {escaped_pred}&#10;"
+                f"Meaning: {s.meaning_similarity}% | Congruence: {s.composite_congruence}% ({s.status})"
+            )
             
             replacement = (
                 f'<span class="cloze-span {badge_class}" title="{tooltip}" data-mask-id="{s.mask_id}">'
                 f'<span class="span-text">{escaped_orig}</span>'
-                f'<span class="span-badge">{s.composite_congruence}%</span>'
+                f'<span class="span-badge">Meaning: {s.meaning_similarity}%</span>'
                 f'</span>'
             )
             

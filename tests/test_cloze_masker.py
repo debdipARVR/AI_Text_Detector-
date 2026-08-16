@@ -1,41 +1,47 @@
-"""Unit tests for ClozeMasker."""
+"""Unit tests for Sentence ClozeMasker (Pass 1 and Pass 2)."""
 
 from src.engine.cloze_masker import ClozeMasker, ClozeMaskResult
 
 
 def test_split_sentences():
     text = "Large language models generate text based on statistical likelihood. They optimize for minimal perplexity. However, humans write with idiosyncratic variation."
-    sentences = ClozeMasker.split_sentences(text)
+    sentences = ClozeMasker.split_into_sentences(text)
     assert len(sentences) == 3
     assert sentences[0].startswith("Large language")
     assert sentences[1].startswith("They optimize")
     assert sentences[2].startswith("However, humans")
 
 
-def test_mask_text_basic():
-    masker = ClozeMasker(default_mask_rate=0.30, seed=42)
+def test_mask_pass_1_sparse():
+    masker = ClozeMasker()
     text = (
-        "Artificial intelligence systems are rapidly advancing across multimodal domains. "
-        "These models demonstrate emergent reasoning abilities that surpass traditional heuristics. "
-        "Understanding how they formulate conclusions remains an active area of contemporary research."
+        "First sentence in the paragraph. "
+        "Second sentence that should be masked in sparse mode. "
+        "Third sentence following the masked sentence. "
+        "Fourth sentence ending the first four line group. "
+        "Fifth sentence starting the next group."
     )
-    result = masker.mask_text(text)
+    result = masker.mask_pass_1(text)
     assert isinstance(result, ClozeMaskResult)
-    assert len(result.spans) > 0
+    assert result.pass_index == 1
+    assert len(result.spans) >= 1
     assert "[MASK_1]" in result.masked_text
-    assert result.masked_words > 0
-    assert result.total_words > 20
-    assert 0.10 <= result.mask_ratio <= 0.60
+    assert result.spans[0].original_text == "Second sentence that should be masked in sparse mode."
 
 
-def test_multipass_masks():
-    masker = ClozeMasker(default_mask_rate=0.30)
+def test_mask_pass_2_alternate():
+    masker = ClozeMasker()
     text = (
-        "Neural networks learn representations from high dimensional data distributions. "
-        "By optimizing gradient descent on billions of parameters, they capture nuanced patterns."
+        "Sentence zero removed in alternate pass. "
+        "Sentence one kept as context. "
+        "Sentence two removed in alternate pass. "
+        "Sentence three kept as context."
     )
-    passes = masker.generate_multipass_masks(text, num_passes=3)
-    assert len(passes) == 3
-    for p in passes:
-        assert isinstance(p, ClozeMaskResult)
-        assert len(p.spans) >= 1
+    result = masker.mask_pass_2(text)
+    assert isinstance(result, ClozeMaskResult)
+    assert result.pass_index == 2
+    assert len(result.spans) == 2
+    assert "[MASK_1]" in result.masked_text
+    assert "[MASK_2]" in result.masked_text
+    assert result.spans[0].original_text == "Sentence zero removed in alternate pass."
+    assert result.spans[1].original_text == "Sentence two removed in alternate pass."

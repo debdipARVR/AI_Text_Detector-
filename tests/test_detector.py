@@ -1,4 +1,4 @@
-"""Unit and Integration tests for ClozeCongruenceDetector."""
+"""Unit and Integration tests for Two-Pass ClozeCongruenceDetector."""
 
 from src.engine.detector import ClozeCongruenceDetector
 from src.engine.nim_client import NvidiaNIMClient
@@ -12,8 +12,8 @@ def test_detector_empty_text():
 
 
 def test_detector_with_mock_client():
-    client = NvidiaNIMClient(api_key="")
-    detector = ClozeCongruenceDetector(nim_client=client, default_passes=1)
+    client = NvidiaNIMClient(api_key="", default_model="z-ai/glm-5.2")
+    detector = ClozeCongruenceDetector(nim_client=client)
     
     text = (
         "Furthermore, artificial intelligence plays a crucial role in modern technological ecosystems. "
@@ -21,13 +21,17 @@ def test_detector_with_mock_client():
         "In conclusion, navigating the complexities of machine learning fosters transformative breakthroughs."
     )
     
-    res = detector.analyze(text, mask_rate=0.30, num_passes=1)
+    res = detector.analyze(text, model_name="z-ai/glm-5.2")
     assert "ai_probability" in res
     assert "verdict" in res
-    assert "metrics" in res
-    assert "semantic_similarity_avg" in res["metrics"]
-    assert "word_similarity_avg" in res["metrics"]
-    assert "spans" in res
-    assert len(res["spans"]) > 0
+    assert "combined_congruence_score" in res
+    assert "pass_1" in res
+    assert "pass_2" in res
+    assert "meaning_similarity" in res["pass_1"]
+    assert "semantic_cosine" in res["pass_1"]
+    assert "congruence_score" in res["pass_1"]
+    assert "meaning_similarity" in res["pass_2"]
+    assert "semantic_cosine" in res["pass_2"]
+    assert "congruence_score" in res["pass_2"]
     assert "highlighted_html" in res
     assert "deepeval_evaluation" in res

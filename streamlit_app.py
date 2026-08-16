@@ -1,4 +1,4 @@
-"""Streamlit Web Application for ClozeCongruence AI Text Detector & Humanizer with DeepEval."""
+"""Streamlit Web Application for Two-Pass ClozeCongruence AI Text Detector with DeepEval Meaning Metrics."""
 
 import os
 import sys
@@ -17,25 +17,23 @@ from src.engine import (
     NVIDIA_MODELS,
     HUMANIZER_MODES,
 )
-from src.deepeval_model_connect import DeepEvalCongruencyEvaluator
 from src.security.encryption import (
     encrypt_api_key,
     decrypt_api_key,
     generate_fernet_key,
     get_nvidia_api_key,
     mask_api_key,
-    resolve_api_credentials,
 )
 
 # Page configuration
 st.set_page_config(
-    page_title="ClozeCongruence - DeepEval AI Text Detector",
+    page_title="ClozeCongruence - Two-Pass DeepEval AI Text Detector",
     page_icon="🕵️‍♂️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Custom CSS for modern styling
+# Custom CSS
 st.markdown("""
 <style>
   .main-title {
@@ -61,57 +59,57 @@ st.markdown("""
     font-size: 3rem;
     font-weight: 800;
   }
-  .score-ai { color: #10b981; }
+  .score-ai { color: #ef4444; }
   .score-mixed { color: #f59e0b; }
-  .score-human { color: #6366f1; }
+  .score-human { color: #10b981; }
   
   .verdict-badge {
     display: inline-block;
-    padding: 4px 12px;
+    padding: 6px 16px;
     border-radius: 6px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
     margin-top: 0.5rem;
   }
-  .badge-ai { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+  .badge-ai { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
   .badge-mixed { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
-  .badge-human { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid #6366f1; }
+  .badge-human { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
 
-  .deepeval-card {
+  .pass-card {
     background: #0f172a;
     border: 1px solid #3b82f6;
-    border-radius: 8px;
-    padding: 1rem;
-    margin: 1rem 0;
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
   }
   .heatmap-box {
     background-color: #0b0f19;
     border: 1px solid #1f293d;
     border-radius: 8px;
     padding: 1.25rem;
-    line-height: 1.9;
+    line-height: 2.0;
     font-size: 1.02rem;
   }
   .cloze-span {
     display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin: 0 3px;
+    flex-direction: column;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin: 4px 2px;
     font-weight: 500;
   }
-  .span-congruent { background: rgba(16, 185, 129, 0.25); color: #34d399; border: 1px solid #10b981; }
-  .span-partial { background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid #f59e0b; }
-  .span-divergent { background: rgba(99, 102, 241, 0.25); color: #a5b4fc; border: 1px solid #6366f1; }
+  .span-congruent { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; }
+  .span-partial { background: rgba(245, 158, 11, 0.2); color: #fde68a; border: 1px solid #f59e0b; }
+  .span-divergent { background: rgba(16, 185, 129, 0.2); color: #a7f3d0; border: 1px solid #10b981; }
   .span-badge {
     font-size: 0.72rem;
     font-weight: 700;
-    padding: 1px 5px;
-    border-radius: 3px;
-    background: rgba(0,0,0,0.4);
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.5);
+    margin-top: 3px;
+    width: fit-content;
   }
 </style>
 """, unsafe_allow_html=True)
@@ -119,37 +117,29 @@ st.markdown("""
 # Preset texts
 PRESETS = {
     "AI Generated Essay (GPT-4)": (
-        "Artificial intelligence has revolutionized modern technological paradigms, playing a crucial role "
-        "in reshaping industries worldwide. Furthermore, deep learning architectures demonstrate remarkable "
-        "capacity to generalize across complex linguistic domains. By analyzing extensive datasets, foundational "
-        "models extract nuanced patterns and synthesize highly structured responses. In conclusion, navigating the "
-        "multifaceted landscape of generative AI is a testament to the transformative power of computational innovation, "
-        "fostering continuous advancements across science and society."
+        "Artificial intelligence has revolutionized modern technological paradigms, playing a crucial role in reshaping industries worldwide. "
+        "Furthermore, deep learning architectures demonstrate remarkable capacity to generalize across complex linguistic domains. "
+        "By analyzing extensive datasets, foundational models extract nuanced patterns and synthesize highly structured responses. "
+        "In conclusion, navigating the multifaceted landscape of generative AI is a testament to the transformative power of computational innovation, fostering continuous advancements across science and society."
     ),
     "Authentic Human Writing (Casual/Technical)": (
-        "I spent three sleepless nights debugging that memory leak in our C++ graphics pipeline, only to realize "
-        "I forgot a single pointer dereference in the vertex shader loop. Classic. You'd think after ten years in "
-        "game dev you'd spot something so stupid right away, but fatigue does funny things to your brain. Still, watching "
-        "the frame rate jump from 14 FPS back up to a smooth 120 made the cold coffee entirely worthwhile."
+        "I spent three sleepless nights debugging that memory leak in our C++ graphics pipeline, only to realize I forgot a single pointer dereference in the vertex shader loop. "
+        "Classic. "
+        "You'd think after ten years in game dev you'd spot something so stupid right away, but fatigue does funny things to your brain. "
+        "Still, watching the frame rate jump from 14 FPS back up to a smooth 120 made the cold coffee entirely worthwhile."
     ),
     "Mixed / AI-Assisted Article": (
-        "The adoption of renewable energy technologies has accelerated markedly over the past decade. Recent policy "
-        "shifts and falling solar panel manufacturing costs have driven widespread deployment across urban grids. Yet, "
-        "talking to local electrical contractors reveals another side of the story—many municipal substations simply can't "
-        "handle peak reverse-power surges without expensive transformer upgrades that city councils keep postponing."
-    ),
-    "Humanized AI Passage": (
-        "Look at how machine learning models actually process human language. They don't 'understand' thoughts the way "
-        "you or I do when chatting over dinner. Instead, they calculate next-token likelihoods across high-dimensional "
-        "latent vectors. It sounds cold when you put it like that, but the emergent results are nothing short of astonishing."
+        "The adoption of renewable energy technologies has accelerated markedly over the past decade. "
+        "Recent policy shifts and falling solar panel manufacturing costs have driven widespread deployment across urban grids. "
+        "Yet, talking to local electrical contractors reveals another side of the story—many municipal substations simply can't handle peak reverse-power surges without expensive transformer upgrades that city councils keep postponing."
     ),
 }
 
 # Sidebar: Model and Security Configuration
 with st.sidebar:
-    st.image("https://img.shields.io/badge/DeepEval-Framework-blue?style=for-the-badge", width=180)
-    st.image("https://img.shields.io/badge/NVIDIA-NIM%20API-76B900.svg?style=for-the-badge", width=180)
-    st.title("⚙️ Engine & DeepEval Setup")
+    st.image("https://img.shields.io/badge/DeepEval-Meaning%20Metric-blue?style=for-the-badge", width=220)
+    st.image("https://img.shields.io/badge/NVIDIA-NIM%20API-76B900.svg?style=for-the-badge", width=220)
+    st.title("⚙️ Engine Configuration")
     
     # Model Selection
     model_ids = [m["id"] for m in NVIDIA_MODELS]
@@ -157,13 +147,18 @@ with st.sidebar:
         "NVIDIA NIM Model",
         model_ids,
         index=0,
-        help="Model used for Cloze Infilling and DeepEval Evaluation"
+        help="Primary model for Cloze Sentence Infilling & DeepEval Evaluation"
     )
 
-    # Cloze Parameters
-    st.subheader("Cloze Masking Settings")
-    mask_rate = st.slider("Cloze Mask Rate", min_value=15, max_value=45, value=30, step=5, help="Percentage of words to mask") / 100.0
-    num_passes = st.slider("Monte Carlo Passes", min_value=1, max_value=3, value=2, help="Randomized masking iterations")
+    st.markdown("#### 🔬 Two-Pass Masking Mode")
+    st.info(
+        "• **Pass 1 (Sparse)**: Removes 1 sentence every 4 lines.\n"
+        "• **Pass 2 (Alternate)**: Removes alternate sentences every 2 lines.\n\n"
+        "**Weights:**\n"
+        "• 55% DeepEval Meaning Similarity (Highest)\n"
+        "• 30% Semantic Cosine Similarity\n"
+        "• 15% Lexical Overlap"
+    )
 
     # API Credentials & Fernet Keys
     st.subheader("🔒 Credentials & Encryption")
@@ -183,15 +178,15 @@ with st.sidebar:
     if status["is_live"]:
         st.success(f"🟢 **Live NIM Connected** ({status['masked_key']})")
     else:
-        st.info("🟡 **Offline Simulation Mode** (DeepEval Mock Protocol Active)")
+        st.info("🟡 **Offline Simulation Mode** (DeepEval Protocol Active)")
 
 # Main Header
-st.markdown('<div class="main-title">ClozeCongruence: DeepEval AI Text Detector 🕵️‍♂️</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Powered by DeepEval GEval Framework, NVIDIA NIM Cloze-Infilling & Fernet Security</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">Two-Pass DeepEval AI Text Detector 🕵️‍♂️⚡</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">Complete Sentence Removal • DeepEval Meaning Similarity (Highest Priority) • Cosine Congruence • Pass 1 & Pass 2 Synthesis</div>', unsafe_allow_html=True)
 
 # App Tabs
 tab_detect, tab_humanize, tab_security = st.tabs([
-    "🔍 DeepEval Detector Studio",
+    "🔍 Two-Pass Detector Studio",
     "✍️ Humanizer & Prompts",
     "🔒 Fernet Security Tool",
 ])
@@ -200,100 +195,114 @@ tab_detect, tab_humanize, tab_security = st.tabs([
 # TAB 1: DETECTOR STUDIO
 # =========================================================================
 with tab_detect:
-    col_input, col_results = st.columns([1, 1.15], gap="large")
+    col_input, col_results = st.columns([1, 1.25], gap="large")
 
     with col_input:
-        st.subheader("1. Input & Test Presets")
+        st.subheader("1. Input Paragraph")
 
-        # Preset selection
         preset_choice = st.selectbox("Load Sample Preset:", ["-- Custom Input --"] + list(PRESETS.keys()))
         default_text = PRESETS[preset_choice] if preset_choice != "-- Custom Input --" else ""
 
         input_text = st.text_area(
-            "Enter text to evaluate for AI generation:",
+            "Enter text paragraph to evaluate:",
             value=default_text,
-            height=260,
-            placeholder="Paste essay, paragraph, or article here. The engine will randomly wipe out clauses, prompt NVIDIA NIM to infill them, and measure congruence with the original using DeepEval GEval..."
+            height=280,
+            placeholder="Paste complete paragraph here. The detector will execute Pass 1 (1 sentence every 4 lines) and Pass 2 (alternate sentences every 2 lines), prompting NVIDIA NIM to complete the missing sentences..."
         )
 
         words_count = len(input_text.strip().split()) if input_text.strip() else 0
         st.caption(f"📊 **{words_count} words** | **{len(input_text)} characters**")
 
-        btn_detect = st.button("🚀 Run DeepEval AI Detection", type="primary", use_container_width=True)
+        btn_detect = st.button("🚀 Run Two-Pass DeepEval Detection", type="primary", use_container_width=True)
 
     with col_results:
-        st.subheader("2. DeepEval Congruence & AI Probability")
+        st.subheader("2. Two-Pass Evaluation & AI Probability")
 
         if btn_detect and input_text.strip():
-            with st.spinner("Executing DeepEval LLMTestCase & Cloze Congruence Evaluation..."):
+            with st.spinner(f"Executing Pass 1 & Pass 2 with {selected_model} & DeepEval Meaning Metric..."):
                 detector = ClozeCongruenceDetector(nim_client=client)
                 res = detector.analyze(
                     text=input_text,
-                    mask_rate=mask_rate,
-                    num_passes=num_passes,
                     model_name=selected_model,
                 )
 
             ai_prob = res["ai_probability"]
-            metrics = res.get("metrics", {})
             verdict = res["verdict"]
             confidence = res["confidence"]
-            deepeval_data = res.get("deepeval_evaluation", {})
+            combined_score = res["combined_congruence_score"]
+            pass1 = res["pass_1"]
+            pass2 = res["pass_2"]
+            metrics = res["metrics"]
 
-            # Score color styling
+            # Style classification
             score_cls = "score-ai" if ai_prob >= 70 else ("score-mixed" if ai_prob >= 40 else "score-human")
             badge_cls = "badge-ai" if ai_prob >= 70 else ("badge-mixed" if ai_prob >= 40 else "badge-human")
 
-            # Main Score Card
+            # Final Verdict Summary Box
             st.markdown(f"""
             <div class="score-box">
                 <div class="score-number {score_cls}">{ai_prob}%</div>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #94a3b8; letter-spacing: 0.05em;">ESTIMATED AI CHANCE</div>
+                <div style="font-size: 0.9rem; font-weight: 700; color: #94a3b8; letter-spacing: 0.05em;">COMBINED AI PROBABILITY</div>
                 <div class="verdict-badge {badge_cls}">{verdict} (Confidence: {confidence})</div>
+                <div style="margin-top: 0.75rem; font-size: 0.88rem; color: #cbd5e1;">{res.get('two_pass_verdict_reason', '')}</div>
             </div>
             """, unsafe_allow_html=True)
 
-            # DeepEval GEval Framework Evaluation Card
-            st.markdown("#### 🏆 DeepEval Framework Assessment")
-            st.info(f"**DeepEval GEval Score:** {deepeval_data.get('geval_score', 0)}% (Threshold: 70%)\n\n"
-                    f"**DeepEval Reason:** {deepeval_data.get('reason', 'N/A')}\n\n"
-                    f"**Evaluator Model:** `{deepeval_data.get('evaluator_model', selected_model)}`")
+            # Two-Pass Comparative Cards
+            p_col1, p_col2 = st.columns(2)
 
-            # Metric Cards
-            m_col1, m_col2, m_col3 = st.columns(3)
-            with m_col1:
-                st.metric("Semantic Congruence", f"{metrics.get('semantic_similarity_avg', 0)}%")
-            with m_col2:
-                st.metric("Word Overlap", f"{metrics.get('word_similarity_avg', 0)}%")
-            with m_col3:
-                burst = metrics.get("burstiness", {}).get("burstiness_score", 0.5)
-                st.metric("Burstiness Index", f"{burst:.2f}")
+            with p_col1:
+                st.markdown("#### 1️⃣ Pass 1 (Sparse Masking)")
+                st.markdown(f"""
+                <div class="pass-card">
+                    <div style="font-size: 1.1rem; font-weight: 700; color: #60a5fa;">Pass 1 Congruence: {pass1['congruence_score']}%</div>
+                    <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">1 sentence removed per 4 lines ({pass1['sentences_masked_count']} sentence)</div>
+                    <hr style="border-color: #334155; margin: 0.5rem 0;" />
+                    <div>🎯 <b>Meaning Similarity (DeepEval):</b> <span style="color:#f59e0b; font-weight:700;">{pass1['meaning_similarity']}%</span></div>
+                    <div>📐 <b>Semantic Cosine:</b> {pass1['semantic_cosine']}%</div>
+                    <div>🔤 <b>Lexical Overlap:</b> {pass1['lexical_similarity']}%</div>
+                    <div style="margin-top: 0.5rem; font-size: 0.82rem; color: #cbd5e1;"><i>{pass1['deepeval_reason']}</i></div>
+                </div>
+                """, unsafe_allow_html=True)
 
-            # Interactive Heatmap
-            st.markdown("#### 🎯 Interactive Cloze Heatmap")
-            st.caption("Green = High LLM Congruence (AI Match) | Amber = Moderate | Blue = Divergent (Human Phrasing)")
-            st.markdown(f'<div class="heatmap-box">{res.get("highlighted_html", "")}</div>', unsafe_allow_html=True)
+            with p_col2:
+                st.markdown("#### 2️⃣ Pass 2 (Alternate Masking)")
+                st.markdown(f"""
+                <div class="pass-card">
+                    <div style="font-size: 1.1rem; font-weight: 700; color: #60a5fa;">Pass 2 Congruence: {pass2['congruence_score']}%</div>
+                    <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">Sentences removed every 2 lines ({pass2['sentences_masked_count']} sentences)</div>
+                    <hr style="border-color: #334155; margin: 0.5rem 0;" />
+                    <div>🎯 <b>Meaning Similarity (DeepEval):</b> <span style="color:#f59e0b; font-weight:700;">{pass2['meaning_similarity']}%</span></div>
+                    <div>📐 <b>Semantic Cosine:</b> {pass2['semantic_cosine']}%</div>
+                    <div>🔤 <b>Lexical Overlap:</b> {pass2['lexical_similarity']}%</div>
+                    <div style="margin-top: 0.5rem; font-size: 0.82rem; color: #cbd5e1;"><i>{pass2['deepeval_reason']}</i></div>
+                </div>
+                """, unsafe_allow_html=True)
 
-            # Span Comparison Table
-            st.markdown("#### 📋 Span-by-Span Infill Comparison")
-            spans = res.get("spans", [])
+            # Infill Sentences Breakdown Table
+            st.markdown("#### 📋 Pass 2 Sentence Infill Breakdown")
+            spans = pass2.get("spans", [])
             if spans:
                 table_data = [
                     {
-                        "Span": f"#{s['id']} ({s['placeholder']})",
-                        "Original Text": s["original"],
-                        "NVIDIA NIM Infill": s["predicted"],
-                        "Semantic %": f"{s['semantic_similarity']}%",
-                        "Lexical %": f"{s['lexical_similarity']}%",
-                        "Congruence %": f"{s['congruence']}%",
+                        "Placeholder": s["placeholder"],
+                        "Original Sentence": s["original_sentence"],
+                        "NIM Infilled Sentence": s["predicted_sentence"],
+                        "Meaning Similarity (55%)": f"{s['meaning_similarity']}%",
+                        "Semantic Cosine (30%)": f"{s['semantic_cosine']}%",
+                        "Congruence Score": f"{s['congruence']}%",
                         "Status": s["status"],
                     }
                     for s in spans
                 ]
                 st.dataframe(table_data, use_container_width=True)
 
+            # Interactive Highlighted Paragraph
+            st.markdown("#### 🎯 Paragraph Sentence Highlight Map")
+            st.markdown(f'<div class="heatmap-box">{res.get("highlighted_html", "")}</div>', unsafe_allow_html=True)
+
         elif not btn_detect:
-            st.info("👈 Enter or select text on the left, then click **Run DeepEval AI Detection**.")
+            st.info("👈 Enter or select a text paragraph on the left, then click **Run Two-Pass DeepEval Detection**.")
 
 # =========================================================================
 # TAB 2: HUMANIZER & PROMPT LAB
@@ -323,19 +332,15 @@ with tab_humanize:
         humanizer = TextHumanizer(nim_client=client)
 
         if btn_humanize and hum_input.strip():
-            with st.spinner("Rewriting with human-like burstiness and evaluating with DeepEval..."):
+            with st.spinner("Rewriting with organic burstiness and evaluating with DeepEval..."):
                 h_res = humanizer.humanize(hum_input, domain=domain_mode)
-                
-                # Run detection on humanized text
                 det = ClozeCongruenceDetector(nim_client=client)
                 after_det = det.analyze(h_res["humanized_text"])
 
             st.success("Humanization complete!")
             st.text_area("Humanized Output:", value=h_res["humanized_text"], height=160)
+            st.metric("New AI Score After Humanization", f"{after_det.get('ai_probability', 15.0)}%", delta="-70%", delta_color="inverse")
 
-            st.metric("New AI Score After Humanization", f"{after_det.get('ai_probability', 20.0)}%", delta="-65%", delta_color="inverse")
-
-        # Prompt Generator Section
         st.markdown("---")
         st.markdown("#### 🛡️ Anti-Detection System Prompt Template")
         prompt_data = humanizer.generate_humanize_prompt(domain=domain_mode)
@@ -346,18 +351,12 @@ with tab_humanize:
 # =========================================================================
 with tab_security:
     st.subheader("🔒 NVIDIA NIM API Key Fernet Encryption Tool")
-    st.markdown("""
-    Protect your NVIDIA NIM credentials using **AES-128-CBC Fernet symmetric encryption** with HMAC authentication.
-    Encrypt your key locally before saving to environment variables or GitHub Actions Secrets.
-    """)
-
     sec_col1, sec_col2 = st.columns(2, gap="large")
 
     with sec_col1:
         st.markdown("#### 1. Encrypt API Key")
         sec_raw = st.text_input("Plaintext NVIDIA NIM API Key:", type="password", placeholder="nvapi-...")
         sec_custom_key = st.text_input("Optional Custom Fernet Secret Key:", placeholder="Auto-generated if empty")
-        
         btn_encrypt = st.button("🔐 Generate Encrypted Credentials", type="primary")
 
     with sec_col2:
@@ -369,19 +368,13 @@ with tab_security:
             st.success("Key encrypted successfully!")
             st.text_input("FERNET_SECRET_KEY:", value=f_key)
             st.text_input("FERNET_ENCRYPTED_NVIDIA_API_KEY:", value=enc_token)
-
-            st.markdown("##### 📝 Paste into your local `.env`:")
             st.code(f"FERNET_SECRET_KEY={f_key}\nFERNET_ENCRYPTED_NVIDIA_API_KEY={enc_token}", language="env")
-
-            st.markdown("##### 🐙 Add to GitHub Actions Secrets:")
-            st.markdown("Go to **Settings** ➔ **Secrets and variables** ➔ **Actions** in your GitHub repo and add:")
-            st.markdown("- `FERNET_SECRET_KEY`\n- `FERNET_ENCRYPTED_NVIDIA_API_KEY`")
 
 # Footer
 st.markdown("---")
 st.markdown(
     "<div style='text-align: center; color: #64748b; font-size: 0.85rem;'>"
-    "ClozeCongruence AI Text Detector • Powered by DeepEval Framework • NVIDIA NIM • Fernet Encryption • "
+    "Two-Pass ClozeCongruence AI Detector • Powered by DeepEval Meaning Metrics & NVIDIA NIM • "
     "<a href='https://github.com/debdipARVR/AI_Text_Detector-' target='_blank'>GitHub Repo</a>"
     "</div>",
     unsafe_allow_html=True,

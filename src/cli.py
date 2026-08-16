@@ -66,18 +66,29 @@ def main():
         if args.json:
             print(json.dumps(res, indent=2))
         else:
-            print("\n=======================================================")
-            print(" Cloze Congruence AI Detection Result (DeepEval Framework)")
-            print("=======================================================")
-            print(f"Verdict:             {res['verdict']} (Confidence: {res['confidence']})")
-            print(f"AI Probability:      {res['ai_probability']}%")
-            if "deepeval_evaluation" in res:
-                print(f"DeepEval GEval Score: {res['deepeval_evaluation']['geval_score']}%")
-                print(f"DeepEval Reason:     {res['deepeval_evaluation']['reason']}")
-            print(f"Semantic Congruence: {res['metrics']['semantic_similarity_avg']}%")
-            print(f"Word Overlap:        {res['metrics']['word_similarity_avg']}%")
-            print(f"Congruent Spans:     {res['metrics']['congruent_spans_count']}/{res['metrics']['total_spans_count']}")
-            print("=======================================================\n")
+            print("\n=================================================================")
+            print(" Two-Pass Cloze Congruence AI Detection Result (DeepEval)")
+            print("=================================================================")
+            print(f"Verdict:                    {res['verdict']} (Confidence: {res['confidence']})")
+            print(f"Combined AI Probability:    {res['ai_probability']}%")
+            print(f"Combined Congruence Score:  {res['combined_congruence_score']}%\n")
+            
+            p1 = res.get("pass_1", {})
+            print(f"--- Pass 1 (Sparse: 1 sentence per 4 lines) ---")
+            print(f"  Congruence Score:         {p1.get('congruence_score', 0)}%")
+            print(f"  Meaning Similarity (55%): {p1.get('meaning_similarity', 0)}%")
+            print(f"  Semantic Cosine (30%):    {p1.get('semantic_cosine', 0)}%")
+            print(f"  DeepEval Reason:          {p1.get('deepeval_reason', 'N/A')}\n")
+
+            p2 = res.get("pass_2", {})
+            print(f"--- Pass 2 (Alternate: sentences every 2 lines) ---")
+            print(f"  Congruence Score:         {p2.get('congruence_score', 0)}%")
+            print(f"  Meaning Similarity (55%): {p2.get('meaning_similarity', 0)}%")
+            print(f"  Semantic Cosine (30%):    {p2.get('semantic_cosine', 0)}%")
+            print(f"  DeepEval Reason:          {p2.get('deepeval_reason', 'N/A')}\n")
+
+            print(f"Two-Pass Verdict Reason:    {res.get('two_pass_verdict_reason', '')}")
+            print("=================================================================\n")
 
     elif args.subcommand == "humanize":
         content = args.text

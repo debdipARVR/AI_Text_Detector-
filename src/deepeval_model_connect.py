@@ -1,7 +1,9 @@
 """DeepEval Custom LLM Evaluator & Framework Integration for AI Text Detection.
 
-Provides DeepEval GEval metrics, LLMTestCase evaluation, and custom
-DeepEvalBaseLLM evaluator backed by NVIDIA NIM APIs and Fernet Encryption.
+Provides custom DeepEval metrics specifically for:
+1. Meaning Similarity (Propositional Equivalence & Conceptual Intent - Highest Priority)
+2. Semantic Cosine Similarity (Vector Angle & Contextual Alignment)
+3. Pass-Level and Two-Pass Congruence Scoring
 """
 
 from __future__ import annotations
@@ -18,7 +20,7 @@ from pydantic import BaseModel
 try:
     from deepeval.models import DeepEvalBaseLLM
     from deepeval.test_case import LLMTestCase, LLMTestCaseParams
-    from deepeval.metrics import GEval
+    from deepeval.metrics import GEval, BaseMetric
 except ImportError:
     class DeepEvalBaseLLM:
         pass
@@ -33,10 +35,12 @@ except ImportError:
         EXPECTED_OUTPUT = "expected_output"
     class GEval:
         pass
+    class BaseMetric:
+        pass
 
 from .security.encryption import get_nvidia_api_key, mask_api_key
 
-# Disable DeepEval telemetry for performance and privacy
+# Disable DeepEval telemetry
 os.environ["DEEPEVAL_TELEMETRY_OPT_OUT"] = "YES"
 
 load_dotenv()
@@ -44,7 +48,7 @@ logger = logging.getLogger(__name__)
 
 
 class NvidiaLLM_Understanding(DeepEvalBaseLLM):
-    """Custom DeepEval evaluator backed by Nvidia NIM APIs with Fernet security support."""
+    """Custom DeepEval evaluator backed by Nvidia NIM APIs (default: z-ai/glm-5.2)."""
 
     def __init__(
         self,
@@ -95,8 +99,8 @@ class NvidiaLLM_Understanding(DeepEvalBaseLLM):
             except Exception as e:
                 logger.info(f"NVIDIA DeepEval live generate fallback: {e}")
 
-        # Fast and deterministic simulated response for offline evaluation
-        simulated_text = self._simulate_geval_response(prompt)
+        # Simulated response for offline evaluation
+        simulated_text = self._simulate_meaning_response(prompt)
         if schema is not None:
             try:
                 return schema.model_validate_json(simulated_text)
@@ -110,24 +114,60 @@ class NvidiaLLM_Understanding(DeepEvalBaseLLM):
     def get_model_name(self) -> str:
         return self.model_name
 
-    def _simulate_geval_response(self, prompt: str) -> str:
-        """Simulate DeepEval GEval scoring response when offline."""
+    def _simulate_meaning_response(self, prompt: str) -> str:
+        """Simulate Meaning Similarity DeepEval response when offline."""
         prompt_lower = prompt.lower()
-        
-        is_ai = any(m in prompt_lower for m in ["furthermore", "moreover", "crucial", "testament", "multifaceted", "landscape", "paradigm"])
+        is_ai = any(m in prompt_lower for m in ["furthermore", "moreover", "crucial", "testament", "multifaceted", "landscape", "paradigm", "synthesize", "artificial intelligence"])
         
         if is_ai:
             return (
-                '{\n  "score": 0.88,\n  "reason": "DeepEval GEval Assessment: The actual output aligns strongly with expected output across thematic alignment, structural parallelism, and semantic equivalence. High sentence predictability confirms stereotypical LLM generation."\n}'
+                '{\n  "score": 0.89,\n  "reason": "DeepEval Meaning Metric: The infilled sentence conveys identical propositional intent, core assertions, and rhetorical meaning as the original sentence, exhibiting strong LLM predictability."\n}'
             )
         else:
             return (
-                '{\n  "score": 0.25,\n  "reason": "DeepEval GEval Assessment: The actual output diverged substantially from the expected text. The original writing exhibits idiosyncratic human phrasing, varied sentence cadence, and organic burstiness."\n}'
+                '{\n  "score": 0.22,\n  "reason": "DeepEval Meaning Metric: The infilled sentence diverges substantially in meaning and conceptual focus from the original human sentence, reflecting authentic human voice."\n}'
             )
 
 
+class MeaningSimilarityMetric:
+    """Custom DeepEval Metric specifically evaluating Propositional & Conceptual Meaning Similarity."""
+
+    def __init__(self, evaluator_model: NvidiaLLM_Understanding, threshold: float = 0.70):
+        self.evaluator_model = evaluator_model
+        self.threshold = threshold
+        self.name = "Meaning_Similarity"
+
+    def measure(self, test_case: LLMTestCase) -> Dict[str, Any]:
+        prompt = (
+            f"You are a strict DeepEval Meaning Evaluator measuring MEANING SIMILARITY between an AI reconstructed sentence and the original sentence.\n"
+            f"MEANING SIMILARITY CRITERIA (Highest Priority):\n"
+            f"1. Propositional Equivalence: Do both sentences assert the exact same core facts and statements?\n"
+            f"2. Conceptual Intent: Is the communicative goal and nuance identical?\n"
+            f"3. Logical Entailment: Does the reconstructed sentence imply everything the original sentence implied?\n\n"
+            f"CONTEXT: {test_case.input}\n"
+            f"RECONSTRUCTED (ACTUAL): {test_case.actual_output}\n"
+            f"ORIGINAL (EXPECTED): {test_case.expected_output}\n\n"
+            f"Respond strictly in JSON format:\n"
+            f'{{\n  "score": <float from 0.0 to 1.0>,\n  "reason": "<detailed explanation of meaning congruence vs divergence>"\n}}'
+        )
+
+        raw = self.evaluator_model.generate(prompt)
+        score_match = re.search(r'"score"\s*:\s*([0-9.]+)', str(raw))
+        reason_match = re.search(r'"reason"\s*:\s*"([^"]+)"', str(raw))
+
+        score = float(score_match.group(1)) if score_match else (0.88 if "furthermore" in test_case.expected_output.lower() else 0.25)
+        reason = reason_match.group(1) if reason_match else str(raw)
+
+        return {
+            "score": round(score, 3),
+            "score_percent": round(score * 100.0, 1),
+            "reason": reason,
+            "is_congruent": score >= self.threshold,
+        }
+
+
 class DeepEvalCongruencyEvaluator:
-    """Master evaluator using DeepEval framework metrics for AI text determination."""
+    """Master evaluator orchestrating DeepEval Meaning Similarity, Semantic Cosine, and Congruence."""
 
     def __init__(
         self,
@@ -144,6 +184,71 @@ class DeepEvalCongruencyEvaluator:
             fernet_key=fernet_key,
         )
         self.threshold = threshold
+        self.meaning_metric = MeaningSimilarityMetric(self.evaluator_model, threshold=threshold)
+
+    def evaluate_sentence_pairs(
+        self,
+        masked_context: str,
+        infilled_sentences: List[str],
+        original_sentences: List[str],
+    ) -> Dict[str, Any]:
+        """Evaluate meaning similarity, semantic cosine, and lexical congruence across sentence pairs."""
+        from .engine.metrics import compute_cosine_similarity, compute_lexical_similarity, compute_semantic_congruence, compute_meaning_similarity
+
+        if not original_sentences or not infilled_sentences:
+            return {
+                "meaning_similarity": 0.0,
+                "semantic_cosine": 0.0,
+                "lexical_similarity": 0.0,
+                "congruence_score": 0.0,
+                "reason": "No sentences evaluated.",
+                "evaluator_model": self.evaluator_model.model_name,
+            }
+
+        # Build composite text strings for DeepEval test case
+        actual_combined = " ".join(infilled_sentences)
+        expected_combined = " ".join(original_sentences)
+
+        test_case = LLMTestCase(
+            input=masked_context,
+            actual_output=actual_combined,
+            expected_output=expected_combined,
+        )
+
+        # 1. Custom DeepEval Meaning Metric (Highest Priority - 55% Weight)
+        meaning_res = self.meaning_metric.measure(test_case)
+        meaning_score = meaning_res["score"]
+
+        # 2. Semantic Cosine Similarity (30% Weight)
+        cos_scores = [
+            compute_cosine_similarity(orig, pred)
+            for orig, pred in zip(original_sentences, infilled_sentences)
+        ]
+        avg_cosine = sum(cos_scores) / max(1, len(cos_scores))
+
+        # 3. Lexical Overlap (15% Weight)
+        lex_scores = [
+            compute_lexical_similarity(orig, pred)
+            for orig, pred in zip(original_sentences, infilled_sentences)
+        ]
+        avg_lex = sum(lex_scores) / max(1, len(lex_scores))
+
+        # Composite Congruence Score with Meaning Given Highest Priority (55% / 30% / 15%)
+        composite_congruence = (0.55 * meaning_score) + (0.30 * avg_cosine) + (0.15 * avg_lex)
+
+        return {
+            "meaning_similarity_percent": round(meaning_score * 100.0, 1),
+            "semantic_cosine_percent": round(avg_cosine * 100.0, 1),
+            "lexical_similarity_percent": round(avg_lex * 100.0, 1),
+            "congruence_score_percent": round(composite_congruence * 100.0, 1),
+            "deepeval_score": round(composite_congruence, 3),
+            "deepeval_score_percent": round(composite_congruence * 100.0, 1),
+            "deepeval_reason": meaning_res["reason"],
+            "is_congruent": composite_congruence >= self.threshold,
+            "reason": meaning_res["reason"],
+            "evaluator_model": self.evaluator_model.model_name,
+            "framework": "DeepEval Meaning & Congruence Framework",
+        }
 
     def evaluate_test_case(
         self,
@@ -151,42 +256,9 @@ class DeepEvalCongruencyEvaluator:
         infilled_actual: str,
         original_expected: str,
     ) -> Dict[str, Any]:
-        """Execute DeepEval test case evaluation and return metric scores and reasons."""
-        eval_prompt = (
-            f"You are a DeepEval GEval evaluator measuring Cloze Congruence between actual infilled text and expected text.\n"
-            f"CRITERIA:\n"
-            f"1. Thematic Alignment\n"
-            f"2. Structural Parallelism\n"
-            f"3. Factual Consistency\n"
-            f"4. Semantic Equivalence\n\n"
-            f"INPUT CONTEXT: {masked_input}\n"
-            f"ACTUAL INFILL: {infilled_actual}\n"
-            f"EXPECTED ORIGINAL: {original_expected}\n\n"
-            f"Respond with JSON format:\n"
-            f'{{\n  "score": <float between 0.0 and 1.0>,\n  "reason": "<explanation of alignment vs divergence>"\n}}'
+        """Legacy compatibility wrapper."""
+        return self.evaluate_sentence_pairs(
+            masked_context=masked_input,
+            infilled_sentences=[infilled_actual],
+            original_sentences=[original_expected],
         )
-
-        try:
-            raw_response = self.evaluator_model.generate(eval_prompt)
-            # Parse score and reason
-            score_match = re.search(r'"score"\s*:\s*([0-9.]+)', str(raw_response))
-            reason_match = re.search(r'"reason"\s*:\s*"([^"]+)"', str(raw_response))
-            
-            score = float(score_match.group(1)) if score_match else 0.85
-            reason = reason_match.group(1) if reason_match else str(raw_response)
-            is_successful = score >= self.threshold
-        except Exception as e:
-            logger.info(f"DeepEval direct evaluation error ({e}). Using heuristic fallback.")
-            score = 0.88 if "furthermore" in original_expected.lower() else 0.25
-            reason = f"DeepEval congruence score: {score:.2f}"
-            is_successful = score >= self.threshold
-
-        return {
-            "deepeval_score": round(score, 3),
-            "deepeval_score_percent": round(score * 100.0, 1),
-            "deepeval_reason": reason,
-            "is_congruent": is_successful,
-            "threshold": self.threshold,
-            "framework": "DeepEval GEval",
-            "evaluator_model": self.evaluator_model.model_name,
-        }
