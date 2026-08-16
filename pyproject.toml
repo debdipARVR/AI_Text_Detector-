@@ -1,7 +1,7 @@
 [project]
 name = "ai-text-detector"
 version = "1.0.0"
-description = "Cloze-Congruence AI Text Detection & Humanization Engine powered by NVIDIA NIM & Fernet Security"
+description = "Cloze-Congruence AI Text Detection & Humanization Engine powered by NVIDIA NIM, Streamlit & Fernet Security"
 authors = [
     {name = "debdipARVR", email = "debdip@outlook.com"}
 ]
@@ -10,6 +10,7 @@ dependencies = [
     "cryptography>=42.0.0",
     "fastapi>=0.110.0",
     "uvicorn>=0.28.0",
+    "streamlit>=1.30.0",
     "openai>=1.14.0",
     "python-dotenv>=1.0.0",
     "rapidfuzz>=3.6.0",
