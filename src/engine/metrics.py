@@ -207,46 +207,46 @@ def classify_span_congruence(score: float) -> str:
     return "DIVERGENT"
 
 
-def compute_two_pass_verdict(pass1_score: float, pass2_score: float) -> Dict[str, Any]:
-    """Synthesize final AI verdict based on user's exact two-pass decision rules:
-    - If Pass 1 High (>= 70%) AND Pass 2 High (>= 70%): Surely generated with AI
-    - If Pass 1 High (>= 70%) AND Pass 2 Moderate/Low: Likely AI generated
-    - If Pass 2 High (>= 70%) AND Pass 1 Moderate/Low: Likely AI generated
+def compute_two_pass_verdict(pass2_score: float, pass3_score: float) -> Dict[str, Any]:
+    """Synthesize final AI verdict based on Pass 2 (Alternate) and Pass 3 (Middle 3-Sentence):
+    - If Pass 2 High (>= 70%) AND Pass 3 High (>= 70%): Surely generated with AI
+    - If Pass 2 High (>= 70%) AND Pass 3 Moderate/Low: Likely AI generated
+    - If Pass 3 High (>= 70%) AND Pass 2 Moderate/Low: Likely AI generated
     - If both Moderate (45% - 69%): Mixed / AI-Assisted
     - If both Low (< 45%): Likely Human-Authored
     """
-    p1 = round(pass1_score, 1)
     p2 = round(pass2_score, 1)
-    combined = round((0.50 * p1) + (0.50 * p2), 1)
+    p3 = round(pass3_score, 1)
+    combined = round((0.50 * p2) + (0.50 * p3), 1)
 
-    if p1 >= 70.0 and p2 >= 70.0:
+    if p2 >= 70.0 and p3 >= 70.0:
         verdict = "Surely Generated with AI"
         confidence = "Very High"
         ai_probability = round(max(90.0, min(99.5, combined * 1.05)), 1)
-        reason = "Both Pass 1 (Sparse sentence infill) and Pass 2 (Alternate sentence infill) exhibited high congruency, confirming stereotypical LLM predictability across the entire passage."
-    elif p1 >= 70.0 or p2 >= 70.0:
+        reason = "Both Pass 2 (Alternate sentence infill) and Pass 3 (Middle 3-sentence passage infill) exhibited high congruency, confirming stereotypical LLM predictability across the entire essay."
+    elif p2 >= 70.0 or p3 >= 70.0:
         verdict = "Likely AI-Generated"
         confidence = "High"
         ai_probability = round(max(72.0, min(89.0, combined)), 1)
-        reason = f"High sentence infill congruence observed in {'Pass 1' if p1 >= 70 else 'Pass 2'} ({max(p1, p2)}%), indicating strong AI-synthesized phrasing."
-    elif p1 >= 45.0 or p2 >= 45.0:
+        reason = f"High sentence infill congruence observed in {'Pass 2' if p2 >= 70 else 'Pass 3'} ({max(p2, p3)}%), indicating strong AI-synthesized phrasing."
+    elif p2 >= 45.0 or p3 >= 45.0:
         verdict = "Mixed / AI-Assisted or Edited"
         confidence = "Moderate"
         ai_probability = round(max(45.0, min(68.0, combined)), 1)
-        reason = "Moderate congruence across sentence infilling passes suggests a mix of AI assistance and human editing."
+        reason = "Moderate congruence across Pass 2 and Pass 3 infilling passes suggests a mix of AI assistance and human editing."
     else:
         verdict = "Likely Human-Authored"
         confidence = "High" if combined <= 28.0 else "Moderate"
         ai_probability = round(max(5.0, min(35.0, combined * 0.75)), 1)
-        reason = "Both passes produced significant divergences from the model infills, demonstrating idiosyncratic human syntax and organic burstiness."
+        reason = "Both Pass 2 and Pass 3 produced significant divergences from the model infills, demonstrating idiosyncratic human syntax and organic passage flow."
 
     return {
         "verdict": verdict,
         "confidence": confidence,
         "ai_probability": ai_probability,
         "combined_congruence_score": combined,
-        "pass1_score": p1,
         "pass2_score": p2,
+        "pass3_score": p3,
         "reason": reason,
     }
 

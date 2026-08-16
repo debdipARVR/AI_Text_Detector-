@@ -1,12 +1,9 @@
-"""Sentence-Level Cloze Masking Engine with Stylometric & Structural Metadata Extraction.
+"""Pass 2 & Pass 3 Sentence-Level Cloze Masking Engine for AI Text Detection.
 
-Extracts complete sentences, replaces them with numbered placeholders [1], [2], [3]...,
-and calculates comprehensive structural metadata for each removed sentence:
-- Exact Word Count
-- Space Count and Spacing Frequency
-- Special Characters (commas, semicolons, dashes, quotes, parentheses)
-- Punctuation Distribution Profile
-- Average Word Length & Capitalization Metrics
+Designed for multi-passage essays (7-10+ passages):
+- Pass 2 (Alternate): Removes alternate sentences across every 2 lines.
+- Pass 3 (Middle 3-Sentence Removal): Removes 3 sentences from the middle of each passage/paragraph,
+  preserving the opening topic sentence and closing sentence as context anchors.
 """
 
 from __future__ import annotations
@@ -30,15 +27,13 @@ class SentenceMetadata:
     has_proper_nouns: bool = False
 
     def to_prompt_constraint(self) -> str:
-        """Format metadata as an explicit prompt constraint for LLM completion."""
         spec_chars_str = ", ".join(f"'{c}'" for c in sorted(set(self.special_characters))) if self.special_characters else "None"
         punct_desc = ", ".join(f"{k}: {v}" for k, v in self.punctuation_counts.items() if v > 0)
         return (
-            f"Target Word Count: exactly {self.word_count} words | "
-            f"Space Count: {self.space_count} | "
-            f"Special Characters: [{spec_chars_str}] | "
-            f"Punctuation Profile: ({punct_desc or 'Standard period ending'}) | "
-            f"Avg Word Length: ~{self.avg_word_length} chars"
+            f"Word Count: ~{self.word_count} | "
+            f"Spaces: {self.space_count} | "
+            f"Special Chars: [{spec_chars_str}] | "
+            f"Punctuation: ({punct_desc or 'Standard period'})"
         )
 
 
@@ -49,6 +44,7 @@ class MaskedSpan:
     placeholder: str
     original_text: str
     sentence_idx: int
+    paragraph_idx: int = 0
     metadata: SentenceMetadata = field(default_factory=lambda: SentenceMetadata(0, 0, 0))
     char_start: int = 0
     char_end: int = 0
@@ -73,31 +69,28 @@ class ClozeMaskResult:
     spans: List[MaskedSpan] = field(default_factory=list)
     total_sentences: int = 0
     masked_sentences_count: int = 0
+    total_paragraphs: int = 0
     total_words: int = 0
     masked_words: int = 0
     mask_ratio: float = 0.0
-    pass_index: int = 1
-    pass_name: str = "Pass 1 (Sparse - 1 sentence per 4 lines)"
+    pass_index: int = 2
+    pass_name: str = "Pass 2 (Alternate: sentences removed every 2 lines)"
 
 
 class ClozeMasker:
-    """Masks complete sentences into [1], [2], [3] placeholder keys with structural metadata."""
+    """Masks complete sentences into [1], [2], [3] placeholder keys for Pass 2 and Pass 3."""
 
     def __init__(self, default_mask_rate: float = 0.30):
         self.default_mask_rate = default_mask_rate
 
     @staticmethod
     def extract_sentence_metadata(sentence: str) -> SentenceMetadata:
-        """Extract exact word count, space frequency, and special characters from a sentence."""
         words = re.findall(r'\b[a-zA-Z0-9_\'-]+\b', sentence)
         word_count = len(words)
         char_count = len(sentence)
         space_count = sentence.count(" ") + sentence.count("\t")
 
-        # Find all special characters (non-alphanumeric, non-space)
         special_chars = [c for c in sentence if not c.isalnum() and not c.isspace()]
-
-        # Punctuation counts breakdown
         punct_map = {
             "comma": sentence.count(","),
             "period": sentence.count("."),
@@ -124,152 +117,210 @@ class ClozeMasker:
         )
 
     @staticmethod
-    def split_into_sentences(text: str) -> List[str]:
-        """Split text cleanly into sentences while filtering out empty lines, markdown headers, and Roman numerals."""
+    def split_into_paragraphs(text: str) -> List[List[str]]:
+        """Split multi-passage essay into paragraphs, and each paragraph into clean sentences."""
         cleaned = text.strip()
         if not cleaned:
             return []
 
-        raw_chunks = re.split(r'\n{2,}|\n(?=[A-Z0-9#])', cleaned)
-        sentences: List[str] = []
+        raw_paragraphs = re.split(r'\n{2,}|\r\n\r\n', cleaned)
+        paragraphs: List[List[str]] = []
 
-        for chunk in raw_chunks:
-            chunk = chunk.strip()
-            if not chunk:
+        for p in raw_paragraphs:
+            p = p.strip()
+            if not p:
                 continue
             
-            # Skip markdown headers or standalone numbers / Roman numerals
-            if chunk.startswith("#") and len(chunk.split()) < 8:
+            # Skip standalone markdown headers (e.g. '# Title')
+            if p.startswith("#") and len(p.split()) < 8:
                 continue
-            if re.match(r'^(?:[IVXLCDM]+\.?|[0-9]+\.?)$', chunk, re.IGNORECASE):
+            if re.match(r'^(?:[IVXLCDM]+\.?|[0-9]+\.?)$', p, re.IGNORECASE):
                 continue
 
-            parts = re.split(r'(?<=[.!?])\s+(?=[A-Z0-9"\'])', chunk)
-            for p in parts:
-                s = p.strip()
-                if len(s.split()) >= 4 or (len(s.split()) >= 2 and any(w in s.lower() for w in ["is", "was", "are", "were", "has", "had", "became", "served", "born", "died", "held", "faced", "studied"])):
+            sentences: List[str] = []
+            parts = re.split(r'(?<=[.!?])\s+(?=[A-Z0-9"\'])', p)
+            for part in parts:
+                s = part.strip()
+                if len(s.split()) >= 1 and not s.startswith("#") and not re.match(r'^(?:[IVXLCDM]+\.?|[0-9]+\.?)$', s, re.IGNORECASE):
                     sentences.append(s)
 
-        if not sentences and cleaned:
-            sentences = [cleaned]
+            if sentences:
+                paragraphs.append(sentences)
 
-        return sentences
+        return paragraphs
 
-    def mask_pass_1(self, text: str) -> ClozeMaskResult:
-        """Pass 1: Sparse complete sentence removal (1 sentence removed per 4 sentences)."""
-        sentences = self.split_into_sentences(text)
-        n = len(sentences)
-        if n == 0:
-            return ClozeMaskResult(original_text=text, masked_text="", total_sentences=0, pass_index=1)
-
-        masked_indices: List[int] = []
-        if n == 1:
-            masked_indices = [0]
-        elif n <= 3:
-            masked_indices = [1 if n > 1 else 0]
-        else:
-            for i in range(1, n, 4):
-                masked_indices.append(i)
-            if not masked_indices:
-                masked_indices = [1]
-
-        return self._build_masked_result(
-            sentences=sentences,
-            masked_indices=masked_indices,
-            pass_index=1,
-            pass_name="Pass 1 (Sparse: 1 sentence per 4 lines)",
-            original_text=text,
-        )
+    @classmethod
+    def split_into_sentences(cls, text: str) -> List[str]:
+        """Flattened list of sentences across all paragraphs."""
+        paragraphs = cls.split_into_paragraphs(text)
+        flat: List[str] = []
+        for p in paragraphs:
+            flat.extend(p)
+        return flat
 
     def mask_pass_2(self, text: str) -> ClozeMaskResult:
-        """Pass 2: Alternate complete sentence removal (sentences removed every 2 sentences)."""
-        sentences = self.split_into_sentences(text)
-        n = len(sentences)
-        if n == 0:
+        """Pass 2: Alternate sentence removal (every 2 lines across paragraphs)."""
+        paragraphs = self.split_into_paragraphs(text)
+        if not paragraphs:
             return ClozeMaskResult(original_text=text, masked_text="", total_sentences=0, pass_index=2)
 
-        masked_indices: List[int] = []
-        if n == 1:
-            masked_indices = [0]
-        elif n == 2:
-            masked_indices = [0]
-        else:
-            for i in range(1, n, 2):
-                masked_indices.append(i)
-            if not masked_indices:
-                masked_indices = [0]
-
-        return self._build_masked_result(
-            sentences=sentences,
-            masked_indices=masked_indices,
-            pass_index=2,
-            pass_name="Pass 2 (Alternate: sentences removed every 2 lines)",
-            original_text=text,
-        )
-
-    def _build_masked_result(
-        self,
-        sentences: List[str],
-        masked_indices: List[int],
-        pass_index: int,
-        pass_name: str,
-        original_text: str,
-    ) -> ClozeMaskResult:
         spans: List[MaskedSpan] = []
-        masked_sentences: List[str] = list(sentences)
+        masked_paragraph_blocks: List[str] = []
         mask_counter = 1
+        global_s_idx = 0
 
-        total_words = sum(len(s.split()) for s in sentences)
+        total_sentences = sum(len(p) for p in paragraphs)
+        total_words = sum(sum(len(s.split()) for s in p) for p in paragraphs)
         masked_words = 0
 
-        for idx in masked_indices:
-            if idx >= len(sentences):
-                continue
-            orig_s = sentences[idx]
-            placeholder = f"[{mask_counter}]"
-            masked_sentences[idx] = placeholder
-            
-            meta = self.extract_sentence_metadata(orig_s)
-            masked_words += meta.word_count
+        for p_idx, p_sentences in enumerate(paragraphs):
+            n = len(p_sentences)
+            masked_p = list(p_sentences)
 
-            prefix = sentences[idx - 1] if idx > 0 else ""
-            suffix = sentences[idx + 1] if idx + 1 < len(sentences) else ""
+            # Alternate masking: 1, 3, 5... (leaves 0 as opening topic sentence)
+            for i in range(1, n, 2):
+                orig_s = p_sentences[i]
+                placeholder = f"[{mask_counter}]"
+                masked_p[i] = placeholder
+                
+                meta = self.extract_sentence_metadata(orig_s)
+                masked_words += meta.word_count
 
-            spans.append(
-                MaskedSpan(
-                    mask_id=mask_counter,
-                    placeholder=placeholder,
-                    original_text=orig_s,
-                    sentence_idx=idx,
-                    metadata=meta,
-                    context_prefix=prefix,
-                    context_suffix=suffix,
+                prefix = p_sentences[i - 1] if i > 0 else ""
+                suffix = p_sentences[i + 1] if i + 1 < n else ""
+
+                spans.append(
+                    MaskedSpan(
+                        mask_id=mask_counter,
+                        placeholder=placeholder,
+                        original_text=orig_s,
+                        sentence_idx=global_s_idx + i,
+                        paragraph_idx=p_idx,
+                        metadata=meta,
+                        context_prefix=prefix,
+                        context_suffix=suffix,
+                    )
                 )
-            )
-            mask_counter += 1
+                mask_counter += 1
 
-        masked_text = " ".join(masked_sentences)
+            global_s_idx += n
+            masked_paragraph_blocks.append(" ".join(masked_p))
+
+        masked_text = "\n\n".join(masked_paragraph_blocks)
         ratio = round((masked_words / max(1, total_words)), 3)
 
         return ClozeMaskResult(
-            original_text=original_text,
+            original_text=text,
             masked_text=masked_text,
             spans=spans,
-            total_sentences=len(sentences),
+            total_sentences=total_sentences,
             masked_sentences_count=len(spans),
+            total_paragraphs=len(paragraphs),
             total_words=total_words,
             masked_words=masked_words,
             mask_ratio=ratio,
-            pass_index=pass_index,
-            pass_name=pass_name,
+            pass_index=2,
+            pass_name="Pass 2 (Alternate: sentences removed every 2 lines)",
+        )
+
+    def mask_pass_3(self, text: str) -> ClozeMaskResult:
+        """Pass 3: Three sentences removed from the middle of each passage/paragraph.
+        
+        Preserves the opening topic sentence (S_0) and concluding sentence (S_-1) as anchors.
+        """
+        paragraphs = self.split_into_paragraphs(text)
+        if not paragraphs:
+            return ClozeMaskResult(original_text=text, masked_text="", total_sentences=0, pass_index=3)
+
+        spans: List[MaskedSpan] = []
+        masked_paragraph_blocks: List[str] = []
+        mask_counter = 1
+        global_s_idx = 0
+
+        total_sentences = sum(len(p) for p in paragraphs)
+        total_words = sum(sum(len(s.split()) for s in p) for p in paragraphs)
+        masked_words = 0
+
+        for p_idx, p_sentences in enumerate(paragraphs):
+            n = len(p_sentences)
+            masked_p = list(p_sentences)
+
+            # Determine 3 middle indices for this passage
+            target_indices: List[int] = []
+            if n >= 5:
+                # E.g. for n=5 (0,1,2,3,4) -> remove 1,2,3 (keeping 0 and 4)
+                # E.g. for n=6 (0,1,2,3,4,5) -> remove 2,3,4 (keeping 0,1 and 5)
+                mid = n // 2
+                start_idx = max(1, mid - 1)
+                end_idx = min(n - 1, start_idx + 3)
+                target_indices = list(range(start_idx, end_idx))
+                # Ensure exactly 3 if possible
+                if len(target_indices) < 3 and n >= 4:
+                    target_indices = [1, 2, 3] if n >= 4 else [1, 2]
+            elif n == 4:
+                # 4 sentences: keep S_0, remove middle 3: [1, 2, 3]
+                target_indices = [1, 2, 3]
+            elif n == 3:
+                # 3 sentences: keep S_0 and S_2, remove middle 1: [1]
+                target_indices = [1]
+            elif n == 2:
+                target_indices = [1]
+            else:
+                target_indices = [0]
+
+            for i in target_indices:
+                if i >= n:
+                    continue
+                orig_s = p_sentences[i]
+                placeholder = f"[{mask_counter}]"
+                masked_p[i] = placeholder
+                
+                meta = self.extract_sentence_metadata(orig_s)
+                masked_words += meta.word_count
+
+                prefix = p_sentences[i - 1] if i > 0 else ""
+                suffix = p_sentences[i + 1] if i + 1 < n else ""
+
+                spans.append(
+                    MaskedSpan(
+                        mask_id=mask_counter,
+                        placeholder=placeholder,
+                        original_text=orig_s,
+                        sentence_idx=global_s_idx + i,
+                        paragraph_idx=p_idx,
+                        metadata=meta,
+                        context_prefix=prefix,
+                        context_suffix=suffix,
+                    )
+                )
+                mask_counter += 1
+
+            global_s_idx += n
+            masked_paragraph_blocks.append(" ".join(masked_p))
+
+        masked_text = "\n\n".join(masked_paragraph_blocks)
+        ratio = round((masked_words / max(1, total_words)), 3)
+
+        return ClozeMaskResult(
+            original_text=text,
+            masked_text=masked_text,
+            spans=spans,
+            total_sentences=total_sentences,
+            masked_sentences_count=len(spans),
+            total_paragraphs=len(paragraphs),
+            total_words=total_words,
+            masked_words=masked_words,
+            mask_ratio=ratio,
+            pass_index=3,
+            pass_name="Pass 3 (Middle: 3 sentences removed from passage center)",
         )
 
     def mask_text(
         self,
         text: str,
         mask_rate: Optional[float] = None,
-        pass_index: int = 1,
+        pass_index: int = 2,
     ) -> ClozeMaskResult:
-        if pass_index == 2:
-            return self.mask_pass_2(text)
-        return self.mask_pass_1(text)
+        if pass_index == 3:
+            return self.mask_pass_3(text)
+        return self.mask_pass_2(text)

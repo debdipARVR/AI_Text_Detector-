@@ -278,8 +278,8 @@ with tab_detect:
             verdict = res["verdict"]
             confidence = res["confidence"]
             combined_score = res["combined_congruence_score"]
-            pass1 = res["pass_1"]
             pass2 = res["pass_2"]
+            pass3 = res["pass_3"]
             metrics = res["metrics"]
 
             score_cls = "score-ai" if ai_prob >= 70 else ("score-mixed" if ai_prob >= 40 else "score-human")
@@ -295,25 +295,11 @@ with tab_detect:
             </div>
             """, unsafe_allow_html=True)
 
-            # Two-Pass Comparative Cards
+            # Pass 2 & Pass 3 Comparative Cards
             p_col1, p_col2 = st.columns(2)
 
             with p_col1:
-                st.markdown("#### 1️⃣ Pass 1 (Sparse Masking)")
-                st.markdown(f"""
-                <div class="pass-card">
-                    <div style="font-size: 1.1rem; font-weight: 700; color: #60a5fa;">Pass 1 Congruence: {pass1['congruence_score']}%</div>
-                    <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">1 sentence per 4 lines ({pass1['sentences_masked_count']} blanks)</div>
-                    <hr style="border-color: #334155; margin: 0.5rem 0;" />
-                    <div>🎯 <b>Meaning Similarity (40%):</b> <span style="color:#f59e0b; font-weight:700;">{pass1['meaning_similarity']}%</span></div>
-                    <div>📐 <b>Semantic Cosine (40%):</b> <span style="color:#60a5fa; font-weight:700;">{pass1['semantic_cosine']}%</span></div>
-                    <div>🔤 <b>Semantic (10%) / Lexical (10%):</b> {pass1.get('semantic_similarity', 50.0)}% / {pass1['lexical_similarity']}%</div>
-                    <div style="margin-top: 0.5rem; font-size: 0.82rem; color: #cbd5e1;"><i>{pass1['deepeval_reason']}</i></div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with p_col2:
-                st.markdown("#### 2️⃣ Pass 2 (Alternate Masking)")
+                st.markdown("#### 2️⃣ Pass 2 (Alternate Sentence Removal)")
                 st.markdown(f"""
                 <div class="pass-card">
                     <div style="font-size: 1.1rem; font-weight: 700; color: #60a5fa;">Pass 2 Congruence: {pass2['congruence_score']}%</div>
@@ -326,18 +312,30 @@ with tab_detect:
                 </div>
                 """, unsafe_allow_html=True)
 
-            # Infill Sentences Breakdown Table with Metadata
-            st.markdown("#### 📋 Sentence Pairwise Comparison & Metadata Breakdown")
-            spans = pass2.get("spans", [])
+            with p_col2:
+                st.markdown("#### 3️⃣ Pass 3 (Middle 3-Sentence Passage Removal)")
+                st.markdown(f"""
+                <div class="pass-card">
+                    <div style="font-size: 1.1rem; font-weight: 700; color: #60a5fa;">Pass 3 Congruence: {pass3['congruence_score']}%</div>
+                    <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">3 sentences from passage center ({pass3['sentences_masked_count']} blanks)</div>
+                    <hr style="border-color: #334155; margin: 0.5rem 0;" />
+                    <div>🎯 <b>Meaning Similarity (40%):</b> <span style="color:#f59e0b; font-weight:700;">{pass3['meaning_similarity']}%</span></div>
+                    <div>📐 <b>Semantic Cosine (40%):</b> <span style="color:#60a5fa; font-weight:700;">{pass3['semantic_cosine']}%</span></div>
+                    <div>🔤 <b>Semantic (10%) / Lexical (10%):</b> {pass3.get('semantic_similarity', 50.0)}% / {pass3['lexical_similarity']}%</div>
+                    <div style="margin-top: 0.5rem; font-size: 0.82rem; color: #cbd5e1;"><i>{pass3['deepeval_reason']}</i></div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # Infill Sentences Breakdown Table (Pass 3 Focus)
+            st.markdown("#### 📋 Pass 3 Sentence Pairwise Comparison Breakdown")
+            spans = pass3.get("spans", [])
             if spans:
                 table_data = [
                     {
                         "Key": s["placeholder"],
+                        "Passage": f"P{s.get('paragraph_idx', 0) + 1}",
                         "Original Sentence": s["original_sentence"],
                         "NIM Infilled Sentence": s["predicted_sentence"],
-                        "Words (Target / Infill)": f"{s.get('target_word_count', 0)} / {s.get('infilled_word_count', 0)}",
-                        "Spaces": s.get("space_count", 0),
-                        "Special Chars": ", ".join(set(s.get("special_characters", []))) or "None",
                         "Meaning (40%)": f"{s['meaning_similarity']}%",
                         "Cosine (40%)": f"{s['semantic_cosine']}%",
                         "Congruence": f"{s['congruence']}%",

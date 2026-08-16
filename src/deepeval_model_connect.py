@@ -199,6 +199,7 @@ class DeepEvalCongruencyEvaluator:
             return {
                 "meaning_similarity_percent": 0.0,
                 "semantic_cosine_percent": 0.0,
+                "semantic_similarity_percent": 0.0,
                 "lexical_similarity_percent": 0.0,
                 "congruence_score_percent": 0.0,
                 "deepeval_score": 0.0,

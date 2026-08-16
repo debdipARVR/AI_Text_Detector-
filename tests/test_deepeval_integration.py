@@ -65,7 +65,7 @@ def test_detector_with_deepeval_framework():
     assert "deepeval_evaluation" in res
     assert "meaning_similarity_score" in res["deepeval_evaluation"]
     assert "combined_congruence" in res["deepeval_evaluation"]
-    assert "pass_1" in res
     assert "pass_2" in res
+    assert "pass_3" in res
     assert "DeepEval" in res["deepeval_evaluation"]["framework"]
     assert res["parameters"]["model_name"] == "z-ai/glm-5.2"

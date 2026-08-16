@@ -1,4 +1,4 @@
-"""Evaluate Jawaharlal Nehru essay with Two-Pass Sentence Cloze Congruence and DeepEval."""
+"""Evaluate Jawaharlal Nehru multi-passage essay with Pass 2 & Pass 3 Cloze Congruence."""
 
 import os
 import sys
@@ -60,34 +60,28 @@ def main():
     res = detector.analyze(nehru_essay)
 
     print("=" * 80)
-    print(" JAWAHARLAL NEHRU ESSAY: TWO-PASS DEEPEVAL EVALUATION")
+    print(" JAWAHARLAL NEHRU ESSAY: PASS 2 & PASS 3 DEEPEVAL EVALUATION")
     print("=" * 80)
     print(f"Final Verdict:              {res['verdict']} (Confidence: {res['confidence']})")
     print(f"Combined AI Probability:    {res['ai_probability']}%")
     print(f"Combined Congruence Score:  {res['combined_congruence_score']}%\n")
 
-    print(f"[Pass 1: Sparse - 1 sentence removed per 4 lines] ({res['pass_1']['sentences_masked_count']} blanks):")
-    print(f"  Congruence Score:         {res['pass_1']['congruence_score']}%")
-    print(f"  Meaning Similarity (40%): {res['pass_1']['meaning_similarity']}%")
-    print(f"  Semantic Cosine (40%):    {res['pass_1']['semantic_cosine']}%")
-    print(f"  Semantic Alignment (10%): {res['pass_1']['semantic_similarity']}%")
-    print(f"  Lexical Overlap (10%):    {res['pass_1']['lexical_similarity']}%")
-    print("  Sentence Pairs (Sample):")
-    for s in res['pass_1']['spans'][:5]:
-        print(f"    - Key {s['placeholder']}:")
-        print(f"        Original:  \"{s['original_sentence'][:65]}...\"")
-        print(f"        AI Infill: \"{s['predicted_sentence'][:65]}...\"")
-        print(f"        Scores:    Meaning={s['meaning_similarity']}% | Cosine={s['semantic_cosine']}% | Congruence={s['congruence']}%")
-
-    print(f"\n[Pass 2: Alternate - Sentences removed every 2 lines] ({res['pass_2']['sentences_masked_count']} blanks):")
+    print(f"[Pass 2: Alternate Sentence Removal (every 2 lines)] ({res['pass_2']['sentences_masked_count']} blanks):")
     print(f"  Congruence Score:         {res['pass_2']['congruence_score']}%")
     print(f"  Meaning Similarity (40%): {res['pass_2']['meaning_similarity']}%")
     print(f"  Semantic Cosine (40%):    {res['pass_2']['semantic_cosine']}%")
     print(f"  Semantic Alignment (10%): {res['pass_2']['semantic_similarity']}%")
     print(f"  Lexical Overlap (10%):    {res['pass_2']['lexical_similarity']}%")
-    print("  Sentence Pairs (Sample):")
-    for s in res['pass_2']['spans'][:5]:
-        print(f"    - Key {s['placeholder']}:")
+
+    print(f"\n[Pass 3: Middle 3-Sentence Passage Removal] ({res['pass_3']['sentences_masked_count']} blanks across passages):")
+    print(f"  Congruence Score:         {res['pass_3']['congruence_score']}%")
+    print(f"  Meaning Similarity (40%): {res['pass_3']['meaning_similarity']}%")
+    print(f"  Semantic Cosine (40%):    {res['pass_3']['semantic_cosine']}%")
+    print(f"  Semantic Alignment (10%): {res['pass_3']['semantic_similarity']}%")
+    print(f"  Lexical Overlap (10%):    {res['pass_3']['lexical_similarity']}%")
+    print("  Sample Pass 3 Middle Sentence Pairs:")
+    for s in res['pass_3']['spans'][:6]:
+        print(f"    - Key {s['placeholder']} (Passage {s.get('paragraph_idx', 0)+1}):")
         print(f"        Original:  \"{s['original_sentence'][:65]}...\"")
         print(f"        AI Infill: \"{s['predicted_sentence'][:65]}...\"")
         print(f"        Scores:    Meaning={s['meaning_similarity']}% | Cosine={s['semantic_cosine']}% | Congruence={s['congruence']}%")
