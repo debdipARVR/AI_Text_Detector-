@@ -146,8 +146,8 @@ def build_pdf(filename: str):
 
     # Title & Metadata
     story.append(Paragraph("Multi-Pass Sentence Cloze Infilling with Sigmoidal Semantic Congruence for Robust AI Text Detection", title_style))
-    story.append(Paragraph("Debdip Mukherjee", author_style))
-    story.append(Paragraph("Independent Researcher &bull; GitHub: debdipARVR/AI_Text_Detector-", affil_style))
+    story.append(Paragraph("Debdip Bandyopadhyay", author_style))
+    story.append(Paragraph("Independent Researcher &bull; Email: debdip1992@outlook.com &bull; GitHub: debdipARVR/AI_Text_Detector-", affil_style))
     story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor("#cbd5e1"), spaceAfter=12))
 
     # Abstract Box

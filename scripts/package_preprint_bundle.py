@@ -26,21 +26,33 @@ with zipfile.ZipFile(ZIP_PATH, "w", zipfile.ZIP_DEFLATED) as zipf:
         zipf.write(bib_path, arcname="references.bib")
         print("Added references.bib")
 
-    # 3. Add benchmark results summary
+    # 3. Add paper.pdf
+    pdf_path = os.path.join(BASE_DIR, "paper.pdf")
+    if os.path.exists(pdf_path):
+        zipf.write(pdf_path, arcname="paper.pdf")
+        print("Added paper.pdf")
+
+    # 4. Add benchmark results summary
     bm_path = os.path.join(OUT_DIR, "benchmark_results", "benchmark_results.json")
     if os.path.exists(bm_path):
         zipf.write(bm_path, arcname="data/benchmark_results.json")
         print("Added benchmark_results.json")
 
-    # 4. Instructions
-    readme_content = """# arXiv / TechRxiv Preprint Submission Bundle
+    # 5. Instructions
+    readme_content = """# arXiv / TechRxiv / Zenodo Preprint Submission Bundle
 
 ## Paper Title:
 Multi-Pass Sentence Cloze Infilling with Sigmoidal Semantic Congruence for Robust AI Text Detection
 
+## Author:
+Debdip Bandyopadhyay (Independent Researcher)
+Email: debdip1992@outlook.com
+GitHub: https://github.com/debdipARVR/AI_Text_Detector-
+
 ## Files Included:
+- `paper.pdf`: Publication-ready compiled PDF manuscript.
 - `paper.tex`: Main LaTeX source document (IEEEtran format).
-- `references.bib`: Complete BibTeX bibliography with citations for DetectGPT, Fast-DetectGPT, Ghostbuster, DeepEval, and Watermarking.
+- `references.bib`: Complete BibTeX bibliography with citations.
 - `data/benchmark_results.json`: Empirical evaluation logs across 6 academic domains.
 
 ## How to Submit:
