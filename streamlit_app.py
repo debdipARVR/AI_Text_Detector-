@@ -1,4 +1,4 @@
-"""Streamlit Web Application for ClozeCongruence AI Text Detector & Humanizer."""
+"""Streamlit Web Application for ClozeCongruence AI Text Detector & Humanizer with DeepEval."""
 
 import os
 import sys
@@ -17,6 +17,7 @@ from src.engine import (
     NVIDIA_MODELS,
     HUMANIZER_MODES,
 )
+from src.deepeval_model_connect import DeepEvalCongruencyEvaluator
 from src.security.encryption import (
     encrypt_api_key,
     decrypt_api_key,
@@ -28,7 +29,7 @@ from src.security.encryption import (
 
 # Page configuration
 st.set_page_config(
-    page_title="ClozeCongruence - AI Text Detector & Humanizer",
+    page_title="ClozeCongruence - DeepEval AI Text Detector",
     page_icon="🕵️‍♂️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -78,6 +79,13 @@ st.markdown("""
   .badge-mixed { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
   .badge-human { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid #6366f1; }
 
+  .deepeval-card {
+    background: #0f172a;
+    border: 1px solid #3b82f6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
   .heatmap-box {
     background-color: #0b0f19;
     border: 1px solid #1f293d;
@@ -120,7 +128,7 @@ PRESETS = {
     ),
     "Authentic Human Writing (Casual/Technical)": (
         "I spent three sleepless nights debugging that memory leak in our C++ graphics pipeline, only to realize "
-        "I'd forgotten a single pointer dereference in the vertex shader loop. Classic. You'd think after ten years in "
+        "I forgot a single pointer dereference in the vertex shader loop. Classic. You'd think after ten years in "
         "game dev you'd spot something so stupid right away, but fatigue does funny things to your brain. Still, watching "
         "the frame rate jump from 14 FPS back up to a smooth 120 made the cold coffee entirely worthwhile."
     ),
@@ -139,8 +147,9 @@ PRESETS = {
 
 # Sidebar: Model and Security Configuration
 with st.sidebar:
+    st.image("https://img.shields.io/badge/DeepEval-Framework-blue?style=for-the-badge", width=180)
     st.image("https://img.shields.io/badge/NVIDIA-NIM%20API-76B900.svg?style=for-the-badge", width=180)
-    st.title("⚙️ Engine Configuration")
+    st.title("⚙️ Engine & DeepEval Setup")
     
     # Model Selection
     model_ids = [m["id"] for m in NVIDIA_MODELS]
@@ -148,13 +157,13 @@ with st.sidebar:
         "NVIDIA NIM Model",
         model_ids,
         index=0,
-        help="Model used for Cloze Infilling and Congruence Evaluation"
+        help="Model used for Cloze Infilling and DeepEval Evaluation"
     )
 
     # Cloze Parameters
     st.subheader("Cloze Masking Settings")
     mask_rate = st.slider("Cloze Mask Rate", min_value=15, max_value=45, value=30, step=5, help="Percentage of words to mask") / 100.0
-    num_passes = st.slider("Monte Carlo Passes", min_value=1, max_value=3, value=2, help="Randomized masking iterations for statistical confidence")
+    num_passes = st.slider("Monte Carlo Passes", min_value=1, max_value=3, value=2, help="Randomized masking iterations")
 
     # API Credentials & Fernet Keys
     st.subheader("🔒 Credentials & Encryption")
@@ -174,15 +183,15 @@ with st.sidebar:
     if status["is_live"]:
         st.success(f"🟢 **Live NIM Connected** ({status['masked_key']})")
     else:
-        st.info("🟡 **Offline Simulation Mode** (No live key set - fully testable demo)")
+        st.info("🟡 **Offline Simulation Mode** (DeepEval Mock Protocol Active)")
 
 # Main Header
-st.markdown('<div class="main-title">ClozeCongruence: AI Text Detector 🕵️‍♂️</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Powered by NVIDIA NIM Randomized Cloze-Infilling Congruence & Fernet Security</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">ClozeCongruence: DeepEval AI Text Detector 🕵️‍♂️</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">Powered by DeepEval GEval Framework, NVIDIA NIM Cloze-Infilling & Fernet Security</div>', unsafe_allow_html=True)
 
 # App Tabs
 tab_detect, tab_humanize, tab_security = st.tabs([
-    "🔍 Detector Studio",
+    "🔍 DeepEval Detector Studio",
     "✍️ Humanizer & Prompts",
     "🔒 Fernet Security Tool",
 ])
@@ -204,19 +213,19 @@ with tab_detect:
             "Enter text to evaluate for AI generation:",
             value=default_text,
             height=260,
-            placeholder="Paste essay, paragraph, or article here. The engine will randomly wipe out clauses, prompt NVIDIA NIM to infill them, and measure congruence with the original..."
+            placeholder="Paste essay, paragraph, or article here. The engine will randomly wipe out clauses, prompt NVIDIA NIM to infill them, and measure congruence with the original using DeepEval GEval..."
         )
 
         words_count = len(input_text.strip().split()) if input_text.strip() else 0
         st.caption(f"📊 **{words_count} words** | **{len(input_text)} characters**")
 
-        btn_detect = st.button("🚀 Run Cloze-Congruence Detection", type="primary", use_container_width=True)
+        btn_detect = st.button("🚀 Run DeepEval AI Detection", type="primary", use_container_width=True)
 
     with col_results:
-        st.subheader("2. Congruence & AI Probability")
+        st.subheader("2. DeepEval Congruence & AI Probability")
 
         if btn_detect and input_text.strip():
-            with st.spinner("Querying NVIDIA NIM and computing Cloze Congruence..."):
+            with st.spinner("Executing DeepEval LLMTestCase & Cloze Congruence Evaluation..."):
                 detector = ClozeCongruenceDetector(nim_client=client)
                 res = detector.analyze(
                     text=input_text,
@@ -229,6 +238,7 @@ with tab_detect:
             metrics = res.get("metrics", {})
             verdict = res["verdict"]
             confidence = res["confidence"]
+            deepeval_data = res.get("deepeval_evaluation", {})
 
             # Score color styling
             score_cls = "score-ai" if ai_prob >= 70 else ("score-mixed" if ai_prob >= 40 else "score-human")
@@ -242,6 +252,12 @@ with tab_detect:
                 <div class="verdict-badge {badge_cls}">{verdict} (Confidence: {confidence})</div>
             </div>
             """, unsafe_allow_html=True)
+
+            # DeepEval GEval Framework Evaluation Card
+            st.markdown("#### 🏆 DeepEval Framework Assessment")
+            st.info(f"**DeepEval GEval Score:** {deepeval_data.get('geval_score', 0)}% (Threshold: 70%)\n\n"
+                    f"**DeepEval Reason:** {deepeval_data.get('reason', 'N/A')}\n\n"
+                    f"**Evaluator Model:** `{deepeval_data.get('evaluator_model', selected_model)}`")
 
             # Metric Cards
             m_col1, m_col2, m_col3 = st.columns(3)
@@ -277,7 +293,7 @@ with tab_detect:
                 st.dataframe(table_data, use_container_width=True)
 
         elif not btn_detect:
-            st.info("👈 Enter or select text on the left, then click **Run Cloze-Congruence Detection**.")
+            st.info("👈 Enter or select text on the left, then click **Run DeepEval AI Detection**.")
 
 # =========================================================================
 # TAB 2: HUMANIZER & PROMPT LAB
@@ -307,7 +323,7 @@ with tab_humanize:
         humanizer = TextHumanizer(nim_client=client)
 
         if btn_humanize and hum_input.strip():
-            with st.spinner("Rewriting with human-like burstiness and benchmarking..."):
+            with st.spinner("Rewriting with human-like burstiness and evaluating with DeepEval..."):
                 h_res = humanizer.humanize(hum_input, domain=domain_mode)
                 
                 # Run detection on humanized text
@@ -365,7 +381,7 @@ with tab_security:
 st.markdown("---")
 st.markdown(
     "<div style='text-align: center; color: #64748b; font-size: 0.85rem;'>"
-    "ClozeCongruence AI Text Detector • Powered by NVIDIA NIM • Fernet Encryption • "
+    "ClozeCongruence AI Text Detector • Powered by DeepEval Framework • NVIDIA NIM • Fernet Encryption • "
     "<a href='https://github.com/debdipARVR/AI_Text_Detector-' target='_blank'>GitHub Repo</a>"
     "</div>",
     unsafe_allow_html=True,

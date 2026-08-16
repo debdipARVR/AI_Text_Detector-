@@ -1,12 +1,13 @@
-"""Cloze Congruence AI Text Detector.
+"""Cloze Congruence AI Text Detector powered by DeepEval Framework.
 
 The master detection engine combining randomized span masking, NVIDIA NIM
-cloze infilling, multi-dimensional similarity scoring, and statistical attribution.
+cloze infilling, DeepEval GEval framework metrics, and multi-dimensional congruence scoring.
 """
 
 from __future__ import annotations
 
 import html
+import re
 from typing import Any, Dict, List, Optional
 
 from .cloze_masker import ClozeMasker, MaskedSpan
@@ -18,10 +19,11 @@ from .metrics import (
     compute_semantic_congruence,
 )
 from .nim_client import NvidiaNIMClient
+from ..deepeval_model_connect import DeepEvalCongruencyEvaluator
 
 
 class ClozeCongruenceDetector:
-    """Detects AI-generated text by measuring cloze infill congruence with high-capacity LLMs."""
+    """Detects AI-generated text using the DeepEval framework and NVIDIA NIM cloze infill congruence."""
 
     def __init__(
         self,
@@ -32,6 +34,10 @@ class ClozeCongruenceDetector:
         self.nim_client = nim_client or NvidiaNIMClient()
         self.masker = ClozeMasker(default_mask_rate=default_mask_rate)
         self.default_passes = default_passes
+        self.deepeval_evaluator = DeepEvalCongruencyEvaluator(
+            model_name=self.nim_client.default_model,
+            api_key=self.nim_client.api_key,
+        )
 
     def analyze(
         self,
@@ -51,7 +57,7 @@ class ClozeCongruenceDetector:
             temperature: LLM temperature (0.0 for deterministic infill)
             
         Returns:
-            Dictionary containing AI probability, metrics, span breakdowns, and visual HTML
+            Dictionary containing DeepEval evaluation, AI probability, metrics, and visual HTML
         """
         cleaned_text = text.strip()
         if not cleaned_text:
@@ -76,6 +82,7 @@ class ClozeCongruenceDetector:
         all_semantic_sims: List[float] = []
         primary_spans: List[MaskedSpan] = []
         primary_masked_text: str = ""
+        primary_infilled_reconstructed: str = ""
 
         pass_runs: List[Dict[str, Any]] = []
 
@@ -94,13 +101,15 @@ class ClozeCongruenceDetector:
                 temperature=temperature,
             )
 
-            # Score each span in this pass
+            # Reconstruct infilled text
+            reconstructed_text = mask_result.masked_text
             for span in mask_result.spans:
-                predicted = predictions.get(span.placeholder, span.original_text)
-                span.predicted_text = predicted
+                pred = predictions.get(span.placeholder, span.original_text)
+                span.predicted_text = pred
+                reconstructed_text = reconstructed_text.replace(span.placeholder, pred)
 
-                lex_sim = compute_lexical_similarity(span.original_text, predicted)
-                sem_sim = compute_semantic_congruence(span.original_text, predicted)
+                lex_sim = compute_lexical_similarity(span.original_text, pred)
+                sem_sim = compute_semantic_congruence(span.original_text, pred)
                 composite = (0.55 * sem_sim) + (0.45 * lex_sim)
 
                 span.lexical_similarity = round(lex_sim * 100.0, 1)
@@ -115,10 +124,12 @@ class ClozeCongruenceDetector:
             if p_idx == 0:
                 primary_spans = mask_result.spans
                 primary_masked_text = mask_result.masked_text
+                primary_infilled_reconstructed = reconstructed_text
 
             pass_runs.append({
                 "pass_index": p_idx + 1,
                 "masked_text": mask_result.masked_text,
+                "reconstructed_text": reconstructed_text,
                 "spans_count": len(mask_result.spans),
                 "masked_words": mask_result.masked_words,
                 "spans": [
@@ -135,7 +146,14 @@ class ClozeCongruenceDetector:
                 ],
             })
 
-        # Calculate final AI Probability
+        # DeepEval Framework Evaluation on LLMTestCase
+        deepeval_result = self.deepeval_evaluator.evaluate_test_case(
+            masked_input=primary_masked_text,
+            infilled_actual=primary_infilled_reconstructed,
+            original_expected=cleaned_text,
+        )
+
+        # Calculate final AI Probability combining span congruence, DeepEval GEval, and burstiness
         ai_prob_data = compute_ai_probability(
             span_congruences=all_span_congruences,
             lexical_similarities=all_lexical_sims,
@@ -143,13 +161,35 @@ class ClozeCongruenceDetector:
             burstiness_score=burstiness_info["burstiness_score"],
         )
 
+        # Blend DeepEval GEval metric with cloze statistics
+        geval_score = deepeval_result["deepeval_score_percent"]
+        final_ai_prob = round((0.60 * ai_prob_data["ai_probability"]) + (0.40 * geval_score), 1)
+
+        # Re-evaluate verdict with DeepEval blend
+        if final_ai_prob >= 72.0:
+            verdict = "Likely AI-Generated"
+            confidence = "High" if final_ai_prob >= 85.0 else "Moderate"
+        elif final_ai_prob >= 45.0:
+            verdict = "Mixed / AI-Assisted or Edited"
+            confidence = "Moderate"
+        else:
+            verdict = "Likely Human-Authored"
+            confidence = "High" if final_ai_prob <= 25.0 else "Moderate"
+
         # Generate interactive HTML snippet with visual highlights
         highlighted_html = self._render_highlighted_html(cleaned_text, primary_spans)
 
         return {
-            "ai_probability": ai_prob_data["ai_probability"],
-            "verdict": ai_prob_data["verdict"],
-            "confidence": ai_prob_data["confidence"],
+            "ai_probability": final_ai_prob,
+            "verdict": verdict,
+            "confidence": confidence,
+            "deepeval_evaluation": {
+                "framework": "DeepEval GEval",
+                "geval_score": geval_score,
+                "is_congruent": deepeval_result["is_congruent"],
+                "reason": deepeval_result["deepeval_reason"],
+                "evaluator_model": deepeval_result["evaluator_model"],
+            },
             "metrics": {
                 "semantic_similarity_avg": ai_prob_data["semantic_similarity_avg"],
                 "word_similarity_avg": ai_prob_data["lexical_similarity_avg"],
@@ -165,8 +205,10 @@ class ClozeCongruenceDetector:
                 "model_name": model_name or self.nim_client.default_model,
                 "client_mode": self.nim_client.get_status()["mode"],
                 "is_live_api": self.nim_client.is_live,
+                "evaluation_framework": "DeepEval GEval + NVIDIA NIM",
             },
             "primary_masked_text": primary_masked_text,
+            "reconstructed_text": primary_infilled_reconstructed,
             "spans": [
                 {
                     "id": s.mask_id,
@@ -190,7 +232,6 @@ class ClozeCongruenceDetector:
             return html.escape(original_text)
 
         result_html = html.escape(original_text)
-        # Substitute in reverse order or by string match to avoid offset collisions
         for s in spans:
             escaped_orig = html.escape(s.original_text)
             escaped_pred = html.escape(s.predicted_text or "")

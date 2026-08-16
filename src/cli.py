@@ -67,10 +67,13 @@ def main():
             print(json.dumps(res, indent=2))
         else:
             print("\n=======================================================")
-            print(" Cloze Congruence AI Detection Result")
+            print(" Cloze Congruence AI Detection Result (DeepEval Framework)")
             print("=======================================================")
             print(f"Verdict:             {res['verdict']} (Confidence: {res['confidence']})")
             print(f"AI Probability:      {res['ai_probability']}%")
+            if "deepeval_evaluation" in res:
+                print(f"DeepEval GEval Score: {res['deepeval_evaluation']['geval_score']}%")
+                print(f"DeepEval Reason:     {res['deepeval_evaluation']['reason']}")
             print(f"Semantic Congruence: {res['metrics']['semantic_similarity_avg']}%")
             print(f"Word Overlap:        {res['metrics']['word_similarity_avg']}%")
             print(f"Congruent Spans:     {res['metrics']['congruent_spans_count']}/{res['metrics']['total_spans_count']}")
