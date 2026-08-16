@@ -232,8 +232,15 @@ class DeepEvalCongruencyEvaluator:
             s_score = compute_semantic_congruence(orig, pred)
             l_score = compute_lexical_similarity(orig, pred)
 
-            # User specified weights: Meaning (40%), Cosine (40%), Semantic (10%), Lexical (10%)
-            pair_congruence = (0.40 * m_score) + (0.40 * c_score) + (0.10 * s_score) + (0.10 * l_score)
+            # Dynamic Adaptive Scoring:
+            # Baseline: 80% Meaning + 20% Cosine
+            # When Cosine >= 70% (0.70): shifts to 60% Meaning + 40% Cosine
+            if c_score >= 0.70:
+                pair_congruence = (0.60 * m_score) + (0.40 * c_score)
+                weight_desc = "High-Cosine Boost (60% Meaning / 40% Cosine)"
+            else:
+                pair_congruence = (0.80 * m_score) + (0.20 * c_score)
+                weight_desc = "Baseline Semantic (80% Meaning / 20% Cosine)"
 
             meaning_scores.append(m_score)
             cos_scores.append(c_score)
@@ -250,6 +257,7 @@ class DeepEvalCongruencyEvaluator:
                 "semantic_similarity": round(s_score * 100.0, 1),
                 "lexical_similarity": round(l_score * 100.0, 1),
                 "congruence_score": round(pair_congruence * 100.0, 1),
+                "dynamic_weights": weight_desc,
                 "reason": meaning_res["reason"],
             })
 

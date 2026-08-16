@@ -100,8 +100,13 @@ class ClozeCongruenceDetector:
             lex = compute_lexical_similarity(span.original_text, pred)
             meaning = compute_meaning_similarity(span.original_text, pred)
             
-            # Meaning (40%) + Cosine (40%) + Semantic (10%) + Lexical (10%)
-            comp = (0.40 * meaning) + (0.40 * cos) + (0.10 * sem) + (0.10 * lex)
+            # Dynamic Adaptive Scoring:
+            # Baseline: 80% Meaning + 20% Cosine
+            # When Cosine >= 70% (0.70): shifts to 60% Meaning + 40% Cosine
+            if cos >= 0.70:
+                comp = (0.60 * meaning) + (0.40 * cos)
+            else:
+                comp = (0.80 * meaning) + (0.20 * cos)
 
             span.cosine_similarity = round(cos * 100.0, 1)
             span.semantic_similarity = round(sem * 100.0, 1)
@@ -150,8 +155,13 @@ class ClozeCongruenceDetector:
             lex = compute_lexical_similarity(span.original_text, pred)
             meaning = compute_meaning_similarity(span.original_text, pred)
             
-            # Meaning (40%) + Cosine (40%) + Semantic (10%) + Lexical (10%)
-            comp = (0.40 * meaning) + (0.40 * cos) + (0.10 * sem) + (0.10 * lex)
+            # Dynamic Adaptive Scoring:
+            # Baseline: 80% Meaning + 20% Cosine
+            # When Cosine >= 70% (0.70): shifts to 60% Meaning + 40% Cosine
+            if cos >= 0.70:
+                comp = (0.60 * meaning) + (0.40 * cos)
+            else:
+                comp = (0.80 * meaning) + (0.20 * cos)
 
             span.cosine_similarity = round(cos * 100.0, 1)
             span.semantic_similarity = round(sem * 100.0, 1)
@@ -271,10 +281,9 @@ class ClozeCongruenceDetector:
                 "word_similarity_avg": avg_lexical,
                 "congruence_avg": verdict_data["combined_congruence_score"],
                 "weights": {
-                    "meaning_similarity_weight": "40% (DeepEval Meaning)",
-                    "semantic_cosine_weight": "40% (Cosine Similarity)",
-                    "semantic_similarity_weight": "10% (Semantic Alignment)",
-                    "lexical_overlap_weight": "10% (Word Overlap)",
+                    "policy": "Dynamic Adaptive Scoring (70% Cosine Threshold)",
+                    "baseline_weights": "80% DeepEval Meaning + 20% Semantic Cosine (when Cosine < 70%)",
+                    "boosted_weights": "60% DeepEval Meaning + 40% Semantic Cosine (when Cosine >= 70%)",
                 },
                 "burstiness": burstiness_info,
             },

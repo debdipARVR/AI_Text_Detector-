@@ -201,16 +201,17 @@ with st.sidebar:
         help="Primary model for Cloze Sentence Infilling & DeepEval Evaluation"
     )
 
-    st.markdown("#### 🔬 Weighted Metric Criteria")
+    st.markdown("#### 🔬 Dynamic Adaptive Scoring")
     st.info(
-        "• **Meaning Similarity (DeepEval)**: **40%**\n"
-        "• **Semantic Cosine Similarity**: **40%**\n"
-        "• **Semantic Phrasing Alignment**: **10%**\n"
-        "• **Word & Lexical Overlap**: **10%**\n\n"
-        "**Structural Constraints Passed to NIM:**\n"
-        "• Exact Target Word Count\n"
-        "• Space Count & Frequency\n"
-        "• Special Characters & Punctuation Profile"
+        "• **Baseline Policy (Cosine < 70%)**:\n"
+        "  - **Meaning Similarity (DeepEval)**: **80%**\n"
+        "  - **Semantic Cosine Similarity**: **20%**\n\n"
+        "• **Boosted Policy (Cosine ≥ 70%)**:\n"
+        "  - **Meaning Similarity (DeepEval)**: **60%**\n"
+        "  - **Semantic Cosine Similarity**: **40%**\n\n"
+        "**Multi-Passage Cloze Architecture:**\n"
+        "• **Pass 2**: Alternate sentence masking (every 2 lines)\n"
+        "• **Pass 3**: Middle 3 sentences removed per passage"
     )
 
     # API Credentials & Fernet Keys
@@ -231,11 +232,11 @@ with st.sidebar:
     if status["is_live"]:
         st.success(f"🟢 **Live NIM Connected** ({status['masked_key']})")
     else:
-        st.info("🟡 **Offline Simulation Mode** (Contextual Metadata Active)")
+        st.info("🟡 **Offline Simulation Mode** (Contextual Infilling Active)")
 
 # Main Header
 st.markdown('<div class="main-title">Two-Pass DeepEval AI Text Detector 🕵️‍♂️⚡</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Exact Word Count Constraints • Metadata Profiling (Spaces & Punctuation) • 40% Meaning • 40% Cosine</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">Pass 2 & Pass 3 Multi-Passage Cloze • Dynamic Adaptive Scoring (80/20 Baseline → 60/40 Cosine Boost)</div>', unsafe_allow_html=True)
 
 # App Tabs
 tab_detect, tab_humanize, tab_security = st.tabs([
@@ -310,9 +311,9 @@ with tab_detect:
                     <div style="font-size: 1.1rem; font-weight: 700; color: #60a5fa;">Pass 2 Congruence: {pass2['congruence_score']}%</div>
                     <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">Alternate sentences every 2 lines ({pass2['sentences_masked_count']} blanks)</div>
                     <hr style="border-color: #334155; margin: 0.5rem 0;" />
-                    <div>🎯 <b>Meaning Similarity (40%):</b> <span style="color:#f59e0b; font-weight:700;">{pass2['meaning_similarity']}%</span></div>
-                    <div>📐 <b>Semantic Cosine (40%):</b> <span style="color:#60a5fa; font-weight:700;">{pass2['semantic_cosine']}%</span></div>
-                    <div>🔤 <b>Semantic (10%) / Lexical (10%):</b> {pass2.get('semantic_similarity', 50.0)}% / {pass2['lexical_similarity']}%</div>
+                    <div>🎯 <b>Meaning Similarity (DeepEval):</b> <span style="color:#f59e0b; font-weight:700;">{pass2['meaning_similarity']}%</span></div>
+                    <div>📐 <b>Semantic Cosine Similarity:</b> <span style="color:#60a5fa; font-weight:700;">{pass2['semantic_cosine']}%</span></div>
+                    <div>⚖️ <b>Dynamic Policy:</b> <span style="color:#a7f3d0; font-size:0.85rem;">{"60% Meaning + 40% Cosine (Boosted)" if pass2['semantic_cosine'] >= 70.0 else "80% Meaning + 20% Cosine (Baseline)"}</span></div>
                     <div style="margin-top: 0.5rem; font-size: 0.82rem; color: #cbd5e1;"><i>{pass2['deepeval_reason']}</i></div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -324,9 +325,9 @@ with tab_detect:
                     <div style="font-size: 1.1rem; font-weight: 700; color: #60a5fa;">Pass 3 Congruence: {pass3['congruence_score']}%</div>
                     <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem;">3 sentences from passage center ({pass3['sentences_masked_count']} blanks)</div>
                     <hr style="border-color: #334155; margin: 0.5rem 0;" />
-                    <div>🎯 <b>Meaning Similarity (40%):</b> <span style="color:#f59e0b; font-weight:700;">{pass3['meaning_similarity']}%</span></div>
-                    <div>📐 <b>Semantic Cosine (40%):</b> <span style="color:#60a5fa; font-weight:700;">{pass3['semantic_cosine']}%</span></div>
-                    <div>🔤 <b>Semantic (10%) / Lexical (10%):</b> {pass3.get('semantic_similarity', 50.0)}% / {pass3['lexical_similarity']}%</div>
+                    <div>🎯 <b>Meaning Similarity (DeepEval):</b> <span style="color:#f59e0b; font-weight:700;">{pass3['meaning_similarity']}%</span></div>
+                    <div>📐 <b>Semantic Cosine Similarity:</b> <span style="color:#60a5fa; font-weight:700;">{pass3['semantic_cosine']}%</span></div>
+                    <div>⚖️ <b>Dynamic Policy:</b> <span style="color:#a7f3d0; font-size:0.85rem;">{"60% Meaning + 40% Cosine (Boosted)" if pass3['semantic_cosine'] >= 70.0 else "80% Meaning + 20% Cosine (Baseline)"}</span></div>
                     <div style="margin-top: 0.5rem; font-size: 0.82rem; color: #cbd5e1;"><i>{pass3['deepeval_reason']}</i></div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -341,8 +342,9 @@ with tab_detect:
                         "Passage": f"P{s.get('paragraph_idx', 0) + 1}",
                         "Original Sentence": s["original_sentence"],
                         "NIM Infilled Sentence": s["predicted_sentence"],
-                        "Meaning (40%)": f"{s['meaning_similarity']}%",
-                        "Cosine (40%)": f"{s['semantic_cosine']}%",
+                        "Meaning Sim": f"{s['meaning_similarity']}%",
+                        "Cosine Sim": f"{s['semantic_cosine']}%",
+                        "Applied Weights": "60% M / 40% C" if s["semantic_cosine"] >= 70.0 else "80% M / 20% C",
                         "Congruence": f"{s['congruence']}%",
                         "Status": s["status"],
                     }
