@@ -71,7 +71,7 @@ class NvidiaLLM_Understanding(DeepEvalBaseLLM):
                 self.client = OpenAI(
                     base_url="https://integrate.api.nvidia.com/v1",
                     api_key=self.api_key,
-                    timeout=5.0,
+                    timeout=45.0,
                 )
             except Exception as e:
                 logger.warning(f"Failed to initialize DeepEval NVIDIA client: {e}")
