@@ -49,6 +49,7 @@ def test_detect_endpoint():
             "num_passes": 1,
             "model_name": "meta/llama-3.3-70b-instruct",
             "temperature": 0.0,
+            "raw_api_key": "",
         },
     )
     assert response.status_code == 200
@@ -58,6 +59,7 @@ def test_detect_endpoint():
     assert "metrics" in data
     assert "spans" in data
     assert "highlighted_html" in data
+    assert "deepeval_evaluation" in data
 
 
 def test_humanize_endpoint():
@@ -67,6 +69,7 @@ def test_humanize_endpoint():
         json={
             "text": sample_text,
             "domain": "academic",
+            "raw_api_key": "",
         },
     )
     assert response.status_code == 200

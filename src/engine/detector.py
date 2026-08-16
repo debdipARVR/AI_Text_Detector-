@@ -36,7 +36,7 @@ class ClozeCongruenceDetector:
         self.default_passes = default_passes
         self.deepeval_evaluator = DeepEvalCongruencyEvaluator(
             model_name=self.nim_client.default_model,
-            api_key=self.nim_client.api_key,
+            api_key=self.nim_client.api_key if self.nim_client.is_live else "",
         )
 
     def analyze(

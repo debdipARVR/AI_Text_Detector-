@@ -98,9 +98,12 @@ def resolve_api_credentials(
         except Exception as e:
             raise EncryptionError(f"Failed to decrypt provided token: {e}")
 
-    # 2. Direct raw API key
-    if raw_api_key and raw_api_key.strip():
-        return raw_api_key.strip(), "provided_raw_key"
+    # 2. Direct raw API key (explicit override)
+    if raw_api_key is not None:
+        cleaned = raw_api_key.strip()
+        if cleaned in ("", "mock", "offline", "none"):
+            return None, "explicit_offline"
+        return cleaned, "provided_raw_key"
 
     # 3. Encrypted environment variables
     env_enc = os.getenv("FERNET_ENCRYPTED_NVIDIA_API_KEY")

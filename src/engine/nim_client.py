@@ -79,6 +79,7 @@ class NvidiaNIMClient:
                 self.client = OpenAI(
                     base_url=self.base_url,
                     api_key=self.api_key,
+                    timeout=5.0,
                 )
             except Exception as e:
                 logger.warning(f"Failed to initialize OpenAI client with NVIDIA credentials: {e}")

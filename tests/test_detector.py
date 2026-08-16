@@ -5,14 +5,14 @@ from src.engine.nim_client import NvidiaNIMClient
 
 
 def test_detector_empty_text():
-    detector = ClozeCongruenceDetector()
+    detector = ClozeCongruenceDetector(nim_client=NvidiaNIMClient(api_key=""))
     res = detector.analyze("")
     assert res["ai_probability"] == 0.0
     assert "empty" in res.get("error", "").lower()
 
 
 def test_detector_with_mock_client():
-    client = NvidiaNIMClient()
+    client = NvidiaNIMClient(api_key="")
     detector = ClozeCongruenceDetector(nim_client=client, default_passes=1)
     
     text = (
@@ -30,3 +30,4 @@ def test_detector_with_mock_client():
     assert "spans" in res
     assert len(res["spans"]) > 0
     assert "highlighted_html" in res
+    assert "deepeval_evaluation" in res
