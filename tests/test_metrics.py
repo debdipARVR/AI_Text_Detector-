@@ -64,7 +64,7 @@ def test_compute_two_pass_verdict():
     assert res_likely2["ai_probability"] >= 70.0
 
     # Both Low -> Likely Human
-    res_human = compute_two_pass_verdict(20.0, 15.0)
+    res_human = compute_two_pass_verdict(20.0, 25.0)
     assert res_human["verdict"] == "Likely Human-Authored"
     assert res_human["ai_probability"] <= 35.0
 
@@ -73,3 +73,44 @@ def test_classify_span_congruence():
     assert classify_span_congruence(0.85) == "CONGRUENT"
     assert classify_span_congruence(0.55) == "PARTIAL"
     assert classify_span_congruence(0.20) == "DIVERGENT"
+
+
+def test_compute_sigmoid_dynamic_weights():
+    from src.engine.metrics import compute_sigmoid_dynamic_weights, compute_dynamic_pair_congruence
+
+    # Low cosine (< 0.50): weights ~ 80% meaning, 20% cosine
+    wm_low, wc_low, pol_low = compute_sigmoid_dynamic_weights(0.20)
+    assert wm_low >= 0.78
+    assert wc_low <= 0.22
+
+    # High cosine (> 0.85): weights ~ 60% meaning, 40% cosine
+    wm_high, wc_high, pol_high = compute_sigmoid_dynamic_weights(0.95)
+    assert wm_high <= 0.62
+    assert wc_high >= 0.38
+
+    # Mid transition (0.70): exactly 70% meaning, 30% cosine
+    wm_mid, wc_mid, _ = compute_sigmoid_dynamic_weights(0.70)
+    assert round(wm_mid, 1) == 0.7
+    assert round(wc_mid, 1) == 0.3
+
+
+def test_compute_bipartite_optimal_matching():
+    from src.engine.metrics import compute_bipartite_optimal_matching
+
+    origs = [
+        "He studied at Harrow School, one of the most prestigious schools in Britain.",
+        "Later, he joined Trinity College, Cambridge, where he studied Natural Sciences.",
+    ]
+    # Inverted predictions
+    preds = [
+        "Later, he enrolled at Trinity College in Cambridge to study the Natural Sciences.",
+        "He attended Harrow School, receiving an elite education in Britain.",
+    ]
+
+    matches = compute_bipartite_optimal_matching(origs, preds)
+    assert len(matches) == 2
+    # Check that Orig 0 was matched to Pred 1 (Harrow), and Orig 1 to Pred 0 (Cambridge)
+    assert matches[0]["pred_idx"] == 1
+    assert matches[1]["pred_idx"] == 0
+    assert matches[0]["congruence_score"] >= 40.0
+    assert matches[1]["congruence_score"] >= 40.0

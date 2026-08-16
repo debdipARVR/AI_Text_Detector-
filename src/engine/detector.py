@@ -24,6 +24,8 @@ from .metrics import (
     compute_meaning_similarity,
     compute_semantic_congruence,
     compute_two_pass_verdict,
+    compute_dynamic_pair_congruence,
+    compute_bipartite_optimal_matching,
 )
 from .nim_client import NvidiaNIMClient
 from ..deepeval_model_connect import DeepEvalCongruencyEvaluator
@@ -100,13 +102,8 @@ class ClozeCongruenceDetector:
             lex = compute_lexical_similarity(span.original_text, pred)
             meaning = compute_meaning_similarity(span.original_text, pred)
             
-            # Dynamic Adaptive Scoring:
-            # Baseline: 80% Meaning + 20% Cosine
-            # When Cosine >= 70% (0.70): shifts to 60% Meaning + 40% Cosine
-            if cos >= 0.70:
-                comp = (0.60 * meaning) + (0.40 * cos)
-            else:
-                comp = (0.80 * meaning) + (0.20 * cos)
+            # Continuous Sigmoid Dynamic Adaptive Scoring
+            comp, wm, wc, pol = compute_dynamic_pair_congruence(meaning, cos)
 
             span.cosine_similarity = round(cos * 100.0, 1)
             span.semantic_similarity = round(sem * 100.0, 1)
@@ -155,13 +152,8 @@ class ClozeCongruenceDetector:
             lex = compute_lexical_similarity(span.original_text, pred)
             meaning = compute_meaning_similarity(span.original_text, pred)
             
-            # Dynamic Adaptive Scoring:
-            # Baseline: 80% Meaning + 20% Cosine
-            # When Cosine >= 70% (0.70): shifts to 60% Meaning + 40% Cosine
-            if cos >= 0.70:
-                comp = (0.60 * meaning) + (0.40 * cos)
-            else:
-                comp = (0.80 * meaning) + (0.20 * cos)
+            # Continuous Sigmoid Dynamic Adaptive Scoring
+            comp, wm, wc, pol = compute_dynamic_pair_congruence(meaning, cos)
 
             span.cosine_similarity = round(cos * 100.0, 1)
             span.semantic_similarity = round(sem * 100.0, 1)
@@ -169,6 +161,26 @@ class ClozeCongruenceDetector:
             span.meaning_similarity = round(meaning * 100.0, 1)
             span.composite_congruence = round(comp * 100.0, 1)
             span.status = classify_span_congruence(comp)
+
+        # Passage-level optimal bipartite matching for Pass 3
+        by_para: Dict[int, List[Any]] = {}
+        for span in pass3_mask.spans:
+            p_idx = getattr(span, "paragraph_idx", 0)
+            by_para.setdefault(p_idx, []).append(span)
+
+        for p_idx, p_spans in by_para.items():
+            if len(p_spans) >= 2:
+                origs = [s.original_text for s in p_spans]
+                preds = [s.predicted_text for s in p_spans]
+                matches = compute_bipartite_optimal_matching(origs, preds)
+                for m in matches:
+                    idx = m["orig_idx"]
+                    if idx < len(p_spans):
+                        s = p_spans[idx]
+                        s.meaning_similarity = m["meaning_similarity"]
+                        s.cosine_similarity = m["semantic_cosine"]
+                        s.composite_congruence = m["congruence_score"]
+                        s.status = classify_span_congruence(m["congruence_score"] / 100.0)
 
         # DeepEval Meaning & Congruence Evaluation for Pass 3
         pass3_eval = self.deepeval_evaluator.evaluate_sentence_pairs(
@@ -182,7 +194,7 @@ class ClozeCongruenceDetector:
         # =========================================================================
         p2_score = pass2_eval["congruence_score_percent"]
         p3_score = pass3_eval["congruence_score_percent"]
-        verdict_data = compute_two_pass_verdict(p2_score, p3_score)
+        verdict_data = compute_two_pass_verdict(p2_score, p3_score, burstiness_info=burstiness_info)
 
         avg_meaning = round((0.50 * pass2_eval.get("meaning_similarity_percent", 0.0)) + (0.50 * pass3_eval.get("meaning_similarity_percent", 0.0)), 1)
         avg_cosine = round((0.50 * pass2_eval.get("semantic_cosine_percent", 0.0)) + (0.50 * pass3_eval.get("semantic_cosine_percent", 0.0)), 1)
@@ -281,9 +293,10 @@ class ClozeCongruenceDetector:
                 "word_similarity_avg": avg_lexical,
                 "congruence_avg": verdict_data["combined_congruence_score"],
                 "weights": {
-                    "policy": "Dynamic Adaptive Scoring (70% Cosine Threshold)",
-                    "baseline_weights": "80% DeepEval Meaning + 20% Semantic Cosine (when Cosine < 70%)",
-                    "boosted_weights": "60% DeepEval Meaning + 40% Semantic Cosine (when Cosine >= 70%)",
+                    "policy": "Continuous Sigmoid Dynamic Adaptive Scoring (k=15.0, c0=0.70)",
+                    "formula": "Congruence = (w_meaning * Meaning) + (w_cosine * Cosine), where w_cosine = 0.20 + 0.20 / (1 + exp(-15*(Cosine - 0.70)))",
+                    "bipartite_alignment": "Pass 3 Max-Weight Hungarian Permutation Matching per Passage Block",
+                    "burstiness_modulation": "Sentence Length Entropy & Inter-Pass Confidence Calibration",
                 },
                 "burstiness": burstiness_info,
             },

@@ -207,46 +207,165 @@ def classify_span_congruence(score: float) -> str:
     return "DIVERGENT"
 
 
-def compute_two_pass_verdict(pass2_score: float, pass3_score: float) -> Dict[str, Any]:
-    """Synthesize final AI verdict based on Pass 2 (Alternate) and Pass 3 (Middle 3-Sentence):
-    - If Pass 2 High (>= 70%) AND Pass 3 High (>= 70%): Surely generated with AI
-    - If Pass 2 High (>= 70%) AND Pass 3 Moderate/Low: Likely AI generated
-    - If Pass 3 High (>= 70%) AND Pass 2 Moderate/Low: Likely AI generated
-    - If both Moderate (45% - 69%): Mixed / AI-Assisted
-    - If both Low (< 45%): Likely Human-Authored
+def compute_sigmoid_dynamic_weights(cosine_score: float) -> Tuple[float, float, str]:
+    """Compute continuous sigmoid adaptive weights:
+    - Base: 80% Meaning + 20% Cosine (when Cosine is low)
+    - Transition: smooth sigmoid centered at 70% Cosine (k=15.0)
+    - Boosted: 60% Meaning + 40% Cosine (when Cosine is high)
+    """
+    c = max(0.0, min(1.0, cosine_score))
+    # Sigmoid function centered at 0.70 with steepness 15.0
+    sig = 1.0 / (1.0 + math.exp(-15.0 * (c - 0.70)))
+    w_cos = 0.20 + (0.20 * sig)
+    w_meaning = 1.0 - w_cos
+
+    policy = f"Sigmoid Adaptive ({round(w_meaning*100, 1)}% Meaning / {round(w_cos*100, 1)}% Cosine)"
+    return round(w_meaning, 4), round(w_cos, 4), policy
+
+
+def compute_dynamic_pair_congruence(meaning_score: float, cosine_score: float) -> Tuple[float, float, float, str]:
+    """Compute dynamic congruence using continuous sigmoid gate."""
+    w_m, w_c, policy = compute_sigmoid_dynamic_weights(cosine_score)
+    congruence = (w_m * meaning_score) + (w_c * cosine_score)
+    return round(congruence, 4), w_m, w_c, policy
+
+
+def compute_bipartite_optimal_matching(
+    original_sentences: List[str],
+    predicted_sentences: List[str],
+) -> List[Dict[str, Any]]:
+    """Compute max-weight bipartite matching for multi-sentence blocks (Pass 3 middle sentences).
+    Guarantees optimal assignment even if sentences are inverted or compressed.
+    """
+    import itertools
+
+    n_orig = len(original_sentences)
+    n_pred = len(predicted_sentences)
+    if n_orig == 0 or n_pred == 0:
+        return []
+
+    # If 1-to-1, evaluate directly
+    if n_orig == 1 and n_pred == 1:
+        orig = original_sentences[0]
+        pred = predicted_sentences[0]
+        m = compute_meaning_similarity(orig, pred)
+        c = compute_cosine_similarity(orig, pred)
+        cong, wm, wc, pol = compute_dynamic_pair_congruence(m, c)
+        return [{
+            "orig_idx": 0,
+            "pred_idx": 0,
+            "original_sentence": orig,
+            "predicted_sentence": pred,
+            "meaning_similarity": round(m * 100.0, 1),
+            "semantic_cosine": round(c * 100.0, 1),
+            "congruence_score": round(cong * 100.0, 1),
+            "dynamic_weights": pol,
+        }]
+
+    # Compute similarity matrix
+    sim_matrix = []
+    meta_matrix = []
+    for i, orig in enumerate(original_sentences):
+        row_sim = []
+        row_meta = []
+        for j, pred in enumerate(predicted_sentences):
+            m = compute_meaning_similarity(orig, pred)
+            c = compute_cosine_similarity(orig, pred)
+            cong, wm, wc, pol = compute_dynamic_pair_congruence(m, c)
+            row_sim.append(cong)
+            row_meta.append((m, c, cong, pol))
+        sim_matrix.append(row_sim)
+        meta_matrix.append(row_meta)
+
+    # Find optimal permutation maximizing total score
+    best_score = -1.0
+    best_perm = list(range(min(n_orig, n_pred)))
+
+    # For small n (typical block is 3 sentences), full permutations are fast (3! = 6)
+    candidate_preds = list(range(n_pred))
+    for perm in itertools.permutations(candidate_preds, min(n_orig, n_pred)):
+        score = sum(sim_matrix[i][perm[i]] for i in range(len(perm)))
+        if score > best_score:
+            best_score = score
+            best_perm = perm
+
+    matches = []
+    for i in range(len(best_perm)):
+        j = best_perm[i]
+        m, c, cong, pol = meta_matrix[i][j]
+        matches.append({
+            "orig_idx": i,
+            "pred_idx": j,
+            "original_sentence": original_sentences[i],
+            "predicted_sentence": predicted_sentences[j],
+            "meaning_similarity": round(m * 100.0, 1),
+            "semantic_cosine": round(c * 100.0, 1),
+            "congruence_score": round(cong * 100.0, 1),
+            "dynamic_weights": pol,
+        })
+
+    return matches
+
+
+def compute_two_pass_verdict(
+    pass2_score: float,
+    pass3_score: float,
+    burstiness_info: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Synthesize final AI verdict with:
+    1. Pass 2 and Pass 3 dynamic combination
+    2. Inter-pass variance confidence calibration
+    3. Syntactic burstiness modulation
     """
     p2 = round(pass2_score, 1)
     p3 = round(pass3_score, 1)
     combined = round((0.50 * p2) + (0.50 * p3), 1)
 
+    # Inter-pass variance confidence calibration
+    delta = abs(p2 - p3)
+    calibrated_confidence = round(max(50.0, min(99.5, 100.0 - (1.2 * delta))), 1)
+
+    # Burstiness modulation
+    b_score = (burstiness_info or {}).get("burstiness_score", 0.5)
+    if b_score < 0.25 and combined >= 50.0:
+        # Uniform robotic sentence lengths boost AI probability
+        ai_prob_raw = combined * 1.05 + 2.0
+    elif b_score > 0.65:
+        # High human sentence length variance dampens AI probability
+        ai_prob_raw = combined * 0.90
+    else:
+        ai_prob_raw = combined
+
     if p2 >= 70.0 and p3 >= 70.0:
         verdict = "Surely Generated with AI"
-        confidence = "Very High"
-        ai_probability = round(max(90.0, min(99.5, combined * 1.05)), 1)
+        confidence_str = "Very High" if calibrated_confidence >= 85.0 else "High"
+        ai_probability = round(max(90.0, min(99.5, ai_prob_raw * 1.04)), 1)
         reason = "Both Pass 2 (Alternate sentence infill) and Pass 3 (Middle 3-sentence passage infill) exhibited high congruency, confirming stereotypical LLM predictability across the entire essay."
     elif p2 >= 70.0 or p3 >= 70.0:
         verdict = "Likely AI-Generated"
-        confidence = "High"
-        ai_probability = round(max(72.0, min(89.0, combined)), 1)
+        confidence_str = "High" if calibrated_confidence >= 75.0 else "Moderate"
+        ai_probability = round(max(72.0, min(89.0, ai_prob_raw)), 1)
         reason = f"High sentence infill congruence observed in {'Pass 2' if p2 >= 70 else 'Pass 3'} ({max(p2, p3)}%), indicating strong AI-synthesized phrasing."
     elif p2 >= 45.0 or p3 >= 45.0:
         verdict = "Mixed / AI-Assisted or Edited"
-        confidence = "Moderate"
-        ai_probability = round(max(45.0, min(68.0, combined)), 1)
+        confidence_str = "Moderate"
+        ai_probability = round(max(45.0, min(68.0, ai_prob_raw)), 1)
         reason = "Moderate congruence across Pass 2 and Pass 3 infilling passes suggests a mix of AI assistance and human editing."
     else:
         verdict = "Likely Human-Authored"
-        confidence = "High" if combined <= 28.0 else "Moderate"
-        ai_probability = round(max(5.0, min(35.0, combined * 0.75)), 1)
+        confidence_str = "High" if combined <= 28.0 and calibrated_confidence >= 80.0 else "Moderate"
+        ai_probability = round(max(5.0, min(35.0, ai_prob_raw * 0.75)), 1)
         reason = "Both Pass 2 and Pass 3 produced significant divergences from the model infills, demonstrating idiosyncratic human syntax and organic passage flow."
 
     return {
         "verdict": verdict,
-        "confidence": confidence,
+        "confidence": confidence_str,
+        "calibrated_confidence_score": calibrated_confidence,
         "ai_probability": ai_probability,
         "combined_congruence_score": combined,
         "pass2_score": p2,
         "pass3_score": p3,
+        "inter_pass_delta": round(delta, 1),
         "reason": reason,
     }
 

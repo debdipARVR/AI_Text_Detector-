@@ -192,8 +192,13 @@ class DeepEvalCongruencyEvaluator:
         infilled_sentences: List[str],
         original_sentences: List[str],
     ) -> Dict[str, Any]:
-        """Strict pairwise evaluation comparing each newly infilled sentence against its paired original."""
-        from .engine.metrics import compute_cosine_similarity, compute_lexical_similarity, compute_semantic_congruence, compute_meaning_similarity
+        from .engine.metrics import (
+            compute_cosine_similarity,
+            compute_lexical_similarity,
+            compute_semantic_congruence,
+            compute_meaning_similarity,
+            compute_dynamic_pair_congruence,
+        )
 
         if not original_sentences or not infilled_sentences:
             return {
@@ -232,15 +237,8 @@ class DeepEvalCongruencyEvaluator:
             s_score = compute_semantic_congruence(orig, pred)
             l_score = compute_lexical_similarity(orig, pred)
 
-            # Dynamic Adaptive Scoring:
-            # Baseline: 80% Meaning + 20% Cosine
-            # When Cosine >= 70% (0.70): shifts to 60% Meaning + 40% Cosine
-            if c_score >= 0.70:
-                pair_congruence = (0.60 * m_score) + (0.40 * c_score)
-                weight_desc = "High-Cosine Boost (60% Meaning / 40% Cosine)"
-            else:
-                pair_congruence = (0.80 * m_score) + (0.20 * c_score)
-                weight_desc = "Baseline Semantic (80% Meaning / 20% Cosine)"
+            # Continuous Sigmoid Dynamic Adaptive Scoring:
+            pair_congruence, w_m, w_c, weight_desc = compute_dynamic_pair_congruence(m_score, c_score)
 
             meaning_scores.append(m_score)
             cos_scores.append(c_score)
