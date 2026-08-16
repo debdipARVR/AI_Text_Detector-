@@ -1,8 +1,9 @@
-"""Unit and integration tests for DeepEval framework metrics and custom evaluator."""
+"""Unit and integration tests for DeepEval framework metrics, Key-Value pairing, and custom evaluator."""
 
 from src.deepeval_model_connect import NvidiaLLM_Understanding, DeepEvalCongruencyEvaluator
 from src.engine.detector import ClozeCongruenceDetector
 from src.engine.nim_client import NvidiaNIMClient
+from src.engine.cloze_masker import MaskedSpan
 
 
 def test_deepeval_evaluator_creation():
@@ -17,22 +18,39 @@ def test_deepeval_evaluator_creation():
     assert len(test_gen) > 0
 
 
-def test_deepeval_congruency_metric_evaluation():
+def test_key_value_paired_sentence_evaluation():
     congruence_eval = DeepEvalCongruencyEvaluator(model_name="z-ai/glm-5.2", api_key="")
     
-    res = congruence_eval.evaluate_test_case(
-        masked_input="Artificial intelligence has revolutionized [MASK_1], playing a crucial role [MASK_2].",
-        infilled_actual="Artificial intelligence has revolutionized modern technology, playing a crucial role in reshaping global industries.",
-        original_expected="Artificial intelligence has revolutionized modern technological paradigms, playing a crucial role in reshaping industries worldwide.",
-    )
+    # Original sentences
+    orig_s1 = "Artificial intelligence has revolutionized modern technological paradigms."
+    orig_s2 = "Foundational models synthesize highly structured responses from large-scale pretraining datasets."
     
-    assert "meaning_similarity_percent" in res
-    assert "semantic_cosine_percent" in res
-    assert "congruence_score_percent" in res
-    assert "framework" in res
-    assert "DeepEval" in res["framework"]
-    assert res["meaning_similarity_percent"] >= 0.0
-    assert res["evaluator_model"] == "z-ai/glm-5.2"
+    # Newly infilled sentences (key-value paired)
+    infilled_s1 = "Artificial intelligence has revolutionized modern technological paradigms."
+    infilled_s2 = "Foundational models synthesize structured responses across diverse computational domains."
+
+    masked_context = "[MASK_1] Furthermore, deep learning models learn representations. [MASK_2]"
+
+    res = congruence_eval.evaluate_sentence_pairs(
+        masked_context=masked_context,
+        infilled_sentences=[infilled_s1, infilled_s2],
+        original_sentences=[orig_s1, orig_s2],
+    )
+
+    assert "pair_evaluations" in res
+    assert len(res["pair_evaluations"]) == 2
+    
+    # Verify Pair 1 exact matching
+    pair1 = res["pair_evaluations"][0]
+    assert pair1["original_sentence"] == orig_s1
+    assert pair1["predicted_sentence"] == infilled_s1
+    assert pair1["meaning_similarity"] >= 85.0
+
+    # Verify Pair 2 exact matching
+    pair2 = res["pair_evaluations"][1]
+    assert pair2["original_sentence"] == orig_s2
+    assert pair2["predicted_sentence"] == infilled_s2
+    assert pair2["meaning_similarity"] >= 50.0
 
 
 def test_detector_with_deepeval_framework():

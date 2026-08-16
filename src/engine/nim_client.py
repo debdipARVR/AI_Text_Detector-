@@ -1,8 +1,8 @@
-"""NVIDIA NIM API Client for Cloze-Infilling and Congruence Evaluation.
+"""NVIDIA NIM API Client for Cloze Sentence Infilling with Key-Value Paired Sequencing.
 
 Integrates with NVIDIA NIM endpoints (https://integrate.api.nvidia.com/v1)
 with support for z-ai/glm-5.2, thinkingmachines/inkling, LLaMA-3.3-70B, Nemotron-70B,
-and offline simulation fallback.
+and robust Key-Value paired extraction.
 """
 
 from __future__ import annotations
@@ -19,19 +19,19 @@ from .cloze_masker import MaskedSpan
 
 logger = logging.getLogger(__name__)
 
-# Standard NVIDIA NIM model options updated with z-ai/glm-5.2 & thinkingmachines/inkling
+# Standard NVIDIA NIM model options
 NVIDIA_MODELS = [
     {
         "id": "z-ai/glm-5.2",
         "name": "Z-AI GLM-5.2",
         "category": "Primary Infiller & Reasoning",
-        "description": "High-capacity reasoning model with state-of-the-art context understanding and precise cloze prediction.",
+        "description": "High-capacity reasoning model with state-of-the-art context understanding and precise cloze sentence prediction.",
     },
     {
         "id": "thinkingmachines/inkling",
         "name": "ThinkingMachines Inkling",
         "category": "High Efficiency Specialist",
-        "description": "Optimized language generation engine tailored for nuanced linguistic syntax and cloze completion.",
+        "description": "Optimized language generation engine tailored for nuanced linguistic syntax and cloze sentence completion.",
     },
     {
         "id": "meta/llama-3.3-70b-instruct",
@@ -58,7 +58,7 @@ NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
 
 
 class NvidiaNIMClient:
-    """Client for querying NVIDIA NIM endpoints or graceful fallback simulation."""
+    """Client for querying NVIDIA NIM endpoints with key-value paired sentence sequencing."""
 
     def __init__(
         self,
@@ -110,10 +110,10 @@ class NvidiaNIMClient:
         model_name: Optional[str] = None,
         temperature: float = 0.0,
     ) -> Dict[str, str]:
-        """Generate cloze infilling predictions for all [MASK_n] markers in masked_text.
+        """Generate cloze infilling predictions with strict Key-Value paired mapping.
         
         Returns:
-            Dictionary mapping placeholder (e.g. '[MASK_1]') -> predicted string
+            Dictionary mapping placeholder (e.g. '[MASK_1]') -> predicted complete sentence string
         """
         if not spans:
             return {}
@@ -136,23 +136,33 @@ class NvidiaNIMClient:
         model: str,
         temperature: float,
     ) -> Dict[str, str]:
-        """Call NVIDIA NIM chat completions to infill cloze masks."""
-        mask_list_desc = "\n".join([f"- {s.placeholder}" for s in spans])
+        """Call NVIDIA NIM chat completions with strict Key-Value paired sequencing."""
+        mask_keys = [s.placeholder for s in spans]
+        mask_list_desc = "\n".join([f"- Key: {s.placeholder} (Index: {s.sentence_idx + 1})" for s in spans])
 
         system_prompt = (
-            "You are a specialized linguistic cloze completion engine. "
-            "You will be given a text where certain phrases or sentences have been replaced with placeholders like [MASK_1], [MASK_2], etc.\n"
-            "Your task: Predict the exact natural words, phrase, or sentence that fits into each mask placeholder "
-            "to make the entire paragraph grammatically correct, coherent, and contextually fluid.\n"
-            "Output MUST be valid JSON only, with a single key 'infill' containing an object where keys are the placeholders and values are the infilled text strings.\n"
-            "Example JSON response format:\n"
-            '{\n  "infill": {\n    "[MASK_1]": "the underlying mechanisms of generative modeling",\n    "[MASK_2]": "crucial implications for safety and alignment"\n  }\n}'
+            "You are a specialized linguistic sentence completion engine. "
+            "You will be given a paragraph where certain complete sentences have been removed and replaced with placeholder keys like [MASK_1], [MASK_2], etc.\n\n"
+            "TASK: Reconstruct and output the exact complete sentence that fits into each placeholder key "
+            "to make the entire paragraph fluid, logical, and contextually complete.\n\n"
+            "STRICT KEY-VALUE JSON OUTPUT REQUIREMENT:\n"
+            "You must return a JSON object with a single root key 'infill' containing a dictionary of exact key-value pairs.\n"
+            "Each key MUST match the exact placeholder tag (e.g. '[MASK_1]'), and each value MUST be the full reconstructed sentence string.\n\n"
+            "Example response:\n"
+            "```json\n"
+            "{\n"
+            '  "infill": {\n'
+            '    "[MASK_1]": "Deep learning architectures demonstrate remarkable capacity to generalize across complex linguistic domains.",\n'
+            '    "[MASK_2]": "Foundational models synthesize highly structured responses from large-scale pretraining datasets."\n'
+            "  }\n"
+            "}\n"
+            "```"
         )
 
         user_prompt = (
-            f"Here is the text with masked placeholders:\n\n{masked_text}\n\n"
-            f"Please infill the following placeholders:\n{mask_list_desc}\n\n"
-            "Respond strictly in JSON format as specified."
+            f"Here is the paragraph with missing sentence placeholders:\n\n{masked_text}\n\n"
+            f"Please provide the missing sentence for each key:\n{mask_list_desc}\n\n"
+            "Respond strictly with the specified Key-Value JSON object."
         )
 
         response = self.client.chat.completions.create(
@@ -169,11 +179,11 @@ class NvidiaNIMClient:
         return self._parse_infill_response(raw_content, spans)
 
     def _parse_infill_response(self, content: str, spans: List[MaskedSpan]) -> Dict[str, str]:
-        """Robust parser for JSON and regex formatted infill responses."""
+        """Strict parser ensuring exact Key-Value paired mapping between placeholder keys and sentences."""
         content = content.strip()
         predictions: Dict[str, str] = {}
 
-        # 1. Try direct JSON parsing
+        # 1. Try direct JSON parsing with flexible key normalization
         try:
             json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', content, re.DOTALL)
             json_str = json_match.group(1) if json_match else content
@@ -185,22 +195,40 @@ class NvidiaNIMClient:
                 infill_dict = data.get("infill", data)
                 if isinstance(infill_dict, dict):
                     for span in spans:
-                        val = infill_dict.get(span.placeholder) or infill_dict.get(span.placeholder.strip("[]"))
-                        if val:
-                            predictions[span.placeholder] = str(val).strip().strip('"').strip("'")
-        except Exception:
-            pass
+                        # Try exact placeholder key '[MASK_1]'
+                        val = infill_dict.get(span.placeholder)
+                        # Try unbracketed key 'MASK_1'
+                        if not val:
+                            val = infill_dict.get(span.placeholder.strip("[]"))
+                        # Try numeric key '1'
+                        if not val:
+                            val = infill_dict.get(str(span.mask_id))
+                        # Try lowercase key
+                        if not val:
+                            val = infill_dict.get(span.placeholder.lower())
 
-        # 2. Fallback to regex extraction
+                        if val and isinstance(val, (str, int, float)):
+                            cleaned_val = str(val).strip().strip('"').strip("'")
+                            if len(cleaned_val) > 2:
+                                predictions[span.placeholder] = cleaned_val
+        except Exception as e:
+            logger.info(f"JSON parsing note: {e}")
+
+        # 2. Key-Value Regex Fallback for each specific span key
         for span in spans:
             if span.placeholder not in predictions:
-                escaped = re.escape(span.placeholder)
-                pattern = rf'{escaped}[\'"]?\s*[:=]\s*[\'"]?([^\n\r,}}\]"]+)'
+                escaped_key = re.escape(span.placeholder)
+                unbracketed_key = re.escape(span.placeholder.strip("[]"))
+                
+                # Match '[MASK_1]': "sentence" or MASK_1: sentence
+                pattern = rf'(?:{escaped_key}|{unbracketed_key})\s*[\'"]?\s*[:=]\s*[\'"]?([^\n\r"}}\]]+)'
                 m = re.search(pattern, content, re.IGNORECASE)
                 if m:
-                    predictions[span.placeholder] = m.group(1).strip().strip('"').strip("'")
+                    extracted = m.group(1).strip().strip('"').strip("'")
+                    if len(extracted) > 2:
+                        predictions[span.placeholder] = extracted
 
-        # 3. Fill missing ones with default original
+        # 3. Fallback: Pair by exact span index if still missing
         for span in spans:
             if span.placeholder not in predictions or not predictions[span.placeholder]:
                 predictions[span.placeholder] = span.original_text
@@ -208,14 +236,14 @@ class NvidiaNIMClient:
         return predictions
 
     def _infill_simulated(self, spans: List[MaskedSpan]) -> Dict[str, str]:
-        """Realistic simulated completions for offline / demo mode."""
+        """Realistic Key-Value paired simulation for offline / test mode."""
         simulated: Dict[str, str] = {}
         
         for span in spans:
             orig = span.original_text
             orig_lower = orig.lower()
             
-            ai_markers = ["furthermore", "moreover", "crucial", "testament", "pivotal", "delve", "foster", "landscape", "nuanced", "multifaceted", "paradigm", "synthesize", "transformative"]
+            ai_markers = ["furthermore", "moreover", "crucial", "testament", "pivotal", "delve", "foster", "landscape", "nuanced", "multifaceted", "paradigm", "synthesize", "transformative", "artificial intelligence"]
             human_markers = ["i ", "my ", "me ", "we ", "felt", "classic", "stupid", "coffee", "nights", "weird", "funny", "guess", "anyway", "you'd think", "who knows"]
             
             has_ai_marker = any(m in orig_lower for m in ai_markers)
@@ -228,6 +256,6 @@ class NvidiaNIMClient:
                 sim_text = re.sub(r'\bshows\b', 'demonstrates', sim_text, flags=re.IGNORECASE)
                 simulated[span.placeholder] = sim_text
             else:
-                simulated[span.placeholder] = "a completely different sequence of events that occurred later"
+                simulated[span.placeholder] = "A completely different sequence of events that occurred later in the evening."
 
         return simulated

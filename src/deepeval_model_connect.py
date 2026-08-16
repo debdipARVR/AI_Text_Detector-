@@ -3,7 +3,7 @@
 Provides custom DeepEval metrics specifically for:
 1. Meaning Similarity (Propositional Equivalence & Conceptual Intent - Highest Priority)
 2. Semantic Cosine Similarity (Vector Angle & Contextual Alignment)
-3. Pass-Level and Two-Pass Congruence Scoring
+3. Key-Value Paired Sentence-by-Sentence Evaluation
 """
 
 from __future__ import annotations
@@ -121,11 +121,11 @@ class NvidiaLLM_Understanding(DeepEvalBaseLLM):
         
         if is_ai:
             return (
-                '{\n  "score": 0.89,\n  "reason": "DeepEval Meaning Metric: The infilled sentence conveys identical propositional intent, core assertions, and rhetorical meaning as the original sentence, exhibiting strong LLM predictability."\n}'
+                '{\n  "score": 0.89,\n  "reason": "DeepEval Meaning Metric: The newly infilled sentence conveys identical propositional intent, core assertions, and rhetorical meaning as the original sentence, exhibiting strong LLM predictability."\n}'
             )
         else:
             return (
-                '{\n  "score": 0.22,\n  "reason": "DeepEval Meaning Metric: The infilled sentence diverges substantially in meaning and conceptual focus from the original human sentence, reflecting authentic human voice."\n}'
+                '{\n  "score": 0.22,\n  "reason": "DeepEval Meaning Metric: The newly infilled sentence diverges substantially in meaning and conceptual focus from the original human sentence, reflecting authentic human voice."\n}'
             )
 
 
@@ -139,14 +139,14 @@ class MeaningSimilarityMetric:
 
     def measure(self, test_case: LLMTestCase) -> Dict[str, Any]:
         prompt = (
-            f"You are a strict DeepEval Meaning Evaluator measuring MEANING SIMILARITY between an AI reconstructed sentence and the original sentence.\n"
+            f"You are a strict DeepEval Meaning Evaluator measuring MEANING SIMILARITY between an AI infilled sentence and the paired original sentence.\n"
             f"MEANING SIMILARITY CRITERIA (Highest Priority):\n"
             f"1. Propositional Equivalence: Do both sentences assert the exact same core facts and statements?\n"
             f"2. Conceptual Intent: Is the communicative goal and nuance identical?\n"
             f"3. Logical Entailment: Does the reconstructed sentence imply everything the original sentence implied?\n\n"
             f"CONTEXT: {test_case.input}\n"
-            f"RECONSTRUCTED (ACTUAL): {test_case.actual_output}\n"
-            f"ORIGINAL (EXPECTED): {test_case.expected_output}\n\n"
+            f"INFILLED SENTENCE (ACTUAL): {test_case.actual_output}\n"
+            f"ORIGINAL SENTENCE (EXPECTED): {test_case.expected_output}\n\n"
             f"Respond strictly in JSON format:\n"
             f'{{\n  "score": <float from 0.0 to 1.0>,\n  "reason": "<detailed explanation of meaning congruence vs divergence>"\n}}'
         )
@@ -167,7 +167,7 @@ class MeaningSimilarityMetric:
 
 
 class DeepEvalCongruencyEvaluator:
-    """Master evaluator orchestrating DeepEval Meaning Similarity, Semantic Cosine, and Congruence."""
+    """Master evaluator orchestrating Key-Value Paired Sentence-by-Sentence Congruence."""
 
     def __init__(
         self,
@@ -192,62 +192,81 @@ class DeepEvalCongruencyEvaluator:
         infilled_sentences: List[str],
         original_sentences: List[str],
     ) -> Dict[str, Any]:
-        """Evaluate meaning similarity, semantic cosine, and lexical congruence across sentence pairs."""
+        """Strict pairwise evaluation comparing each newly infilled sentence against its paired original."""
         from .engine.metrics import compute_cosine_similarity, compute_lexical_similarity, compute_semantic_congruence, compute_meaning_similarity
 
         if not original_sentences or not infilled_sentences:
             return {
-                "meaning_similarity": 0.0,
-                "semantic_cosine": 0.0,
-                "lexical_similarity": 0.0,
-                "congruence_score": 0.0,
+                "meaning_similarity_percent": 0.0,
+                "semantic_cosine_percent": 0.0,
+                "lexical_similarity_percent": 0.0,
+                "congruence_score_percent": 0.0,
+                "deepeval_score": 0.0,
+                "deepeval_score_percent": 0.0,
+                "deepeval_reason": "No sentences evaluated.",
+                "is_congruent": False,
                 "reason": "No sentences evaluated.",
                 "evaluator_model": self.evaluator_model.model_name,
+                "framework": "DeepEval Meaning & Congruence Framework",
+                "pair_evaluations": [],
             }
 
-        # Build composite text strings for DeepEval test case
-        actual_combined = " ".join(infilled_sentences)
-        expected_combined = " ".join(original_sentences)
+        # Pairwise evaluations
+        pair_evaluations: List[Dict[str, Any]] = []
+        meaning_scores: List[float] = []
+        cos_scores: List[float] = []
+        lex_scores: List[float] = []
+        comp_scores: List[float] = []
 
-        test_case = LLMTestCase(
-            input=masked_context,
-            actual_output=actual_combined,
-            expected_output=expected_combined,
-        )
+        for idx, (orig, pred) in enumerate(zip(original_sentences, infilled_sentences)):
+            test_case = LLMTestCase(
+                input=masked_context,
+                actual_output=pred,
+                expected_output=orig,
+            )
+            meaning_res = self.meaning_metric.measure(test_case)
+            m_score = meaning_res["score"]
+            c_score = compute_cosine_similarity(orig, pred)
+            l_score = compute_lexical_similarity(orig, pred)
 
-        # 1. Custom DeepEval Meaning Metric (Highest Priority - 55% Weight)
-        meaning_res = self.meaning_metric.measure(test_case)
-        meaning_score = meaning_res["score"]
+            pair_congruence = (0.55 * m_score) + (0.30 * c_score) + (0.15 * l_score)
 
-        # 2. Semantic Cosine Similarity (30% Weight)
-        cos_scores = [
-            compute_cosine_similarity(orig, pred)
-            for orig, pred in zip(original_sentences, infilled_sentences)
-        ]
+            meaning_scores.append(m_score)
+            cos_scores.append(c_score)
+            lex_scores.append(l_score)
+            comp_scores.append(pair_congruence)
+
+            pair_evaluations.append({
+                "pair_id": idx + 1,
+                "original_sentence": orig,
+                "predicted_sentence": pred,
+                "meaning_similarity": round(m_score * 100.0, 1),
+                "semantic_cosine": round(c_score * 100.0, 1),
+                "lexical_similarity": round(l_score * 100.0, 1),
+                "congruence_score": round(pair_congruence * 100.0, 1),
+                "reason": meaning_res["reason"],
+            })
+
+        avg_meaning = sum(meaning_scores) / max(1, len(meaning_scores))
         avg_cosine = sum(cos_scores) / max(1, len(cos_scores))
-
-        # 3. Lexical Overlap (15% Weight)
-        lex_scores = [
-            compute_lexical_similarity(orig, pred)
-            for orig, pred in zip(original_sentences, infilled_sentences)
-        ]
         avg_lex = sum(lex_scores) / max(1, len(lex_scores))
+        avg_comp = sum(comp_scores) / max(1, len(comp_scores))
 
-        # Composite Congruence Score with Meaning Given Highest Priority (55% / 30% / 15%)
-        composite_congruence = (0.55 * meaning_score) + (0.30 * avg_cosine) + (0.15 * avg_lex)
+        primary_reason = pair_evaluations[0]["reason"] if pair_evaluations else "Evaluated."
 
         return {
-            "meaning_similarity_percent": round(meaning_score * 100.0, 1),
+            "meaning_similarity_percent": round(avg_meaning * 100.0, 1),
             "semantic_cosine_percent": round(avg_cosine * 100.0, 1),
             "lexical_similarity_percent": round(avg_lex * 100.0, 1),
-            "congruence_score_percent": round(composite_congruence * 100.0, 1),
-            "deepeval_score": round(composite_congruence, 3),
-            "deepeval_score_percent": round(composite_congruence * 100.0, 1),
-            "deepeval_reason": meaning_res["reason"],
-            "is_congruent": composite_congruence >= self.threshold,
-            "reason": meaning_res["reason"],
+            "congruence_score_percent": round(avg_comp * 100.0, 1),
+            "deepeval_score": round(avg_comp, 3),
+            "deepeval_score_percent": round(avg_comp * 100.0, 1),
+            "deepeval_reason": primary_reason,
+            "is_congruent": avg_comp >= self.threshold,
+            "reason": primary_reason,
             "evaluator_model": self.evaluator_model.model_name,
             "framework": "DeepEval Meaning & Congruence Framework",
+            "pair_evaluations": pair_evaluations,
         }
 
     def evaluate_test_case(
