@@ -1,0 +1,112 @@
+{
+  "total_tests": 21,
+  "passed": 21,
+  "failed": 0,
+  "records": [
+    {
+      "name": "Sigmoid Lower Limit (C=0.0)",
+      "passed": true,
+      "details": "wm=0.8, wc=0.2 (Expected ~0.80/0.20)"
+    },
+    {
+      "name": "Sigmoid Upper Limit (C=1.0)",
+      "passed": true,
+      "details": "wm=0.6022, wc=0.3978 (Expected ~0.60/0.40)"
+    },
+    {
+      "name": "Sigmoid Inflection Center (C=0.70)",
+      "passed": true,
+      "details": "wm=0.7, wc=0.3 (Expected 0.70/0.30)"
+    },
+    {
+      "name": "Sigmoid Strict Monotonicity",
+      "passed": true,
+      "details": "Tested 101 evaluation steps from 0.0 to 1.0"
+    },
+    {
+      "name": "Partition of Unity (wm + wc = 1.0)",
+      "passed": true,
+      "details": "Verified across all continuous input intervals"
+    },
+    {
+      "name": "Permutation Inversion Recovery",
+      "passed": true,
+      "details": "Recovered mapping: [1, 2, 0] (Expected [1, 2, 0])"
+    },
+    {
+      "name": "Permutation Congruence Invariance",
+      "passed": true,
+      "details": "Scores: [100.0, 100.0, 100.0]"
+    },
+    {
+      "name": "Pass 2 Alternate Masking Invariants",
+      "passed": true,
+      "details": "Generated 4 spans with valid placeholders"
+    },
+    {
+      "name": "Pass 3 Boundary Anchor Preservation",
+      "passed": true,
+      "details": "Preserved opening topic and concluding anchors in every paragraph"
+    },
+    {
+      "name": "Human Sample: C++ Engine Dev Log",
+      "passed": true,
+      "details": "Verdict=Likely Human-Authored | AI Prob=12.1% | Congruence=18.0%"
+    },
+    {
+      "name": "Human Sample: Phenomenological Philosophy",
+      "passed": true,
+      "details": "Verdict=Likely Human-Authored | AI Prob=11.9% | Congruence=17.6%"
+    },
+    {
+      "name": "Human Sample: Archival Diplomatic History",
+      "passed": true,
+      "details": "Verdict=Likely Human-Authored | AI Prob=21.1% | Congruence=28.1%"
+    },
+    {
+      "name": "Human Sample: Microeconomics Field Notes",
+      "passed": true,
+      "details": "Verdict=Likely Human-Authored | AI Prob=16.3% | Congruence=24.2%"
+    },
+    {
+      "name": "Human Sample: Biology Lab Diary",
+      "passed": true,
+      "details": "Verdict=Likely Human-Authored | AI Prob=13.7% | Congruence=20.3%"
+    },
+    {
+      "name": "Human Sample: Personal Reading Essay",
+      "passed": true,
+      "details": "Verdict=Likely Human-Authored | AI Prob=19.2% | Congruence=25.6%"
+    },
+    {
+      "name": "Human Sample: Casual Text Conversation",
+      "passed": true,
+      "details": "Verdict=Likely Human-Authored | AI Prob=20.8% | Congruence=27.7%"
+    },
+    {
+      "name": "Human Sample: Creative Travel Memoir",
+      "passed": true,
+      "details": "Verdict=Likely Human-Authored | AI Prob=19.4% | Congruence=25.8%"
+    },
+    {
+      "name": "Human Sample: Technical Hardware Review",
+      "passed": true,
+      "details": "Verdict=Likely Human-Authored | AI Prob=21.7% | Congruence=28.9%"
+    },
+    {
+      "name": "Human Sample: Student Reflective Essay",
+      "passed": true,
+      "details": "Verdict=Likely Human-Authored | AI Prob=20.9% | Congruence=27.9%"
+    },
+    {
+      "name": "Overall Human FPR Stress Result",
+      "passed": true,
+      "details": "FPR = 0.0% (0 false positives out of 10 diverse human samples)"
+    },
+    {
+      "name": "Multi-Passage Adversarial Paraphrase Detection",
+      "passed": true,
+      "details": "AI Prob=90.0% | Verdict=Surely Generated with AI | Congruence=79.6%"
+    }
+  ]
+}
