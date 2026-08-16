@@ -1,7 +1,7 @@
-"""NVIDIA NIM API Client for Cloze Sentence Infilling with Metadata Constraints.
+"""NVIDIA NIM API Client for Cloze Sentence Infilling (Natural Semantic Completion).
 
-Passes exact target word counts, spacing frequency, and special character
-constraints to the NIM LLM to generate perfectly fitting sentences for each [x].
+Queries NVIDIA NIM endpoints (z-ai/glm-5.2, thinkingmachines/inkling)
+to fill missing sentence placeholders [1], [2], [3]... naturally to maximize paragraph coherence.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ NVIDIA_MODELS = [
         "id": "z-ai/glm-5.2",
         "name": "Z-AI GLM-5.2",
         "category": "Primary Infiller & Reasoning",
-        "description": "High-capacity reasoning model with state-of-the-art context understanding and precise cloze sentence prediction.",
+        "description": "High-capacity reasoning model with state-of-the-art context understanding and natural cloze sentence prediction.",
     },
     {
         "id": "thinkingmachines/inkling",
@@ -57,7 +57,7 @@ NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
 
 
 class NvidiaNIMClient:
-    """Client for querying NVIDIA NIM endpoints with word-count & structural metadata constraints."""
+    """Client for querying NVIDIA NIM endpoints with natural Key-Value sentence infilling."""
 
     def __init__(
         self,
@@ -109,7 +109,7 @@ class NvidiaNIMClient:
         model_name: Optional[str] = None,
         temperature: float = 0.0,
     ) -> Dict[str, str]:
-        """Generate cloze infilling predictions with strict metadata and word-count matching."""
+        """Generate cloze infilling predictions with natural contextual coherence."""
         if not spans:
             return {}
 
@@ -131,37 +131,30 @@ class NvidiaNIMClient:
         model: str,
         temperature: float,
     ) -> Dict[str, str]:
-        """Call NVIDIA NIM chat completions passing exact word count and structural metadata constraints."""
-        mask_constraints_list: List[str] = []
-        for s in spans:
-            constraint_text = s.metadata.to_prompt_constraint() if s.metadata else f"Target: ~{len(s.original_text.split())} words"
-            mask_constraints_list.append(f"- Placeholder Key {s.placeholder}:\n    • Constraints: {constraint_text}")
-
-        constraints_formatted = "\n".join(mask_constraints_list)
+        """Call NVIDIA NIM chat completions asking for natural sentence completion."""
+        mask_list_desc = "\n".join([f"- Placeholder {s.placeholder}" for s in spans])
 
         system_prompt = (
-            "You are a specialized linguistic sentence completion engine with strict structural precision.\n"
-            "You will be given an essay where certain complete sentences have been removed and replaced with numbered placeholders like [1], [2], [3], etc.\n\n"
-            "CRITICAL STRUCTURAL & METADATA REQUIREMENTS:\n"
-            "1. Exact Word Count: For each placeholder [x], generate a sentence with the EXACT number of words specified in the constraints.\n"
-            "2. Spacing & Punctuation Profile: Keep spacing frequency, commas, colons, dashes, and tone completely natural and harmonious with the surrounding paragraph.\n"
-            "3. Seamless Context Fit: The reconstructed sentence must form a continuous, cohesive paragraph with the preceding and succeeding context.\n"
-            "4. Return STRICT JSON: Return a JSON object with a root key 'infill' containing key-value pairs matching each placeholder key.\n\n"
-            "Example response format:\n"
+            "You are a specialized linguistic sentence completion engine.\n"
+            "You will be given a passage where certain complete sentences have been removed and replaced with numbered placeholders like [1], [2], [3], etc.\n\n"
+            "TASK: For each numbered placeholder [x], generate exactly ONE complete, natural, and contextually fluent sentence that perfectly fits into that position to make the entire passage coherent, grammatically sound, and meaningful.\n\n"
+            "STRICT KEY-VALUE JSON OUTPUT REQUIREMENT:\n"
+            "Return a JSON object with a single root key 'infill' containing a dictionary of exact key-value pairs matching each placeholder tag.\n\n"
+            "Example response:\n"
             "```json\n"
             "{\n"
             '  "infill": {\n'
-            '    "[1]": "Known for his calm personality, intellectual honesty, and understated style of leadership, he served as Prime Minister from 2004 to 2014.",\n'
-            '    "[2]": "The Partition of India in 1947 profoundly affected his early life as his family moved to India."\n'
+            '    "[1]": "He devoted his entire life to serving the country and worked tirelessly for the welfare of its people.",\n'
+            '    "[2]": "His academic achievements established him as a distinguished scholar long before entering politics."\n'
             "  }\n"
             "}\n"
             "```"
         )
 
         user_prompt = (
-            f"Here is the text containing missing sentence placeholders:\n\n{masked_text}\n\n"
-            f"STRUCTURAL METADATA CONSTRAINTS FOR EACH PLACEHOLDER:\n{constraints_formatted}\n\n"
-            "Generate the exact replacement sentence for each placeholder matching its target word count and metadata profile. Respond strictly in JSON."
+            f"Here is the passage with missing sentence placeholders:\n\n{masked_text}\n\n"
+            f"Please generate the most contextually coherent replacement sentence for each placeholder:\n{mask_list_desc}\n\n"
+            "Respond strictly in the JSON format."
         )
 
         response = self.client.chat.completions.create(
@@ -171,7 +164,7 @@ class NvidiaNIMClient:
                 {"role": "user", "content": user_prompt},
             ],
             temperature=temperature,
-            max_tokens=900,
+            max_tokens=1500,
         )
 
         raw_content = response.choices[0].message.content or ""
@@ -231,12 +224,11 @@ class NvidiaNIMClient:
         return predictions
 
     def _infill_simulated(self, spans: List[MaskedSpan], context: str = "") -> Dict[str, str]:
-        """Intelligent context-aware simulation respecting word count and metadata in demo mode."""
+        """Intelligent context-aware simulation for offline / demo mode."""
         simulated: Dict[str, str] = {}
         
         for span in spans:
             orig = span.original_text
-            target_words = span.metadata.word_count if span.metadata and span.metadata.word_count > 0 else len(orig.split())
             orig_lower = orig.lower()
             
             ai_markers = ["furthermore", "moreover", "crucial", "testament", "pivotal", "delve", "foster", "landscape", "nuanced", "multifaceted", "paradigm", "synthesize", "transformative", "artificial intelligence"]
@@ -255,10 +247,7 @@ class NvidiaNIMClient:
                 words = orig.split()
                 if len(words) > 6:
                     first_part = " ".join(words[:len(words)//2])
-                    filler_words = ["which", "significantly", "helped", "advance", "broader", "institutional", "and", "economic", "development", "goals", "nationwide"]
-                    needed_extra = max(2, target_words - len(words)//2)
-                    suffix_filler = " ".join(filler_words[:needed_extra])
-                    simulated[span.placeholder] = f"{first_part}, {suffix_filler}."
+                    simulated[span.placeholder] = f"{first_part}, which contributed significantly to the broader historical and institutional developments."
                 else:
                     simulated[span.placeholder] = f"This aspect played a notable role in subsequent historical events."
 
