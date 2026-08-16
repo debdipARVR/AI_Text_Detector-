@@ -1,0 +1,16 @@
+id,domain,title,ground_truth_label,is_ai_binary,predicted_verdict,ai_probability,confidence,combined_congruence,pass_2_congruence,pass_3_congruence,meaning_similarity_avg,semantic_cosine_avg,strict_matching_score,static_weight_score
+AI_COG_01,Cognitive Science & Neuroscience,Artificial Intelligence and Its Impact on the Human Brain,AI_GENERATED,1,Surely Generated with AI,95.3,Very High,85.4,85.6,85.2,89.0,72.2,76.8,77.1
+AI_ECON_01,Economics & Quantitative Finance,Algorithmic Market Microstructure and Endogenous Systemic Risk,AI_GENERATED,1,Likely Human-Authored,22.3,Moderate,29.7,29.7,29.7,22.0,56.2,41.0,41.4
+AI_CS_01,Computer Science & Distributed Systems,Consensus Protocols in Asynchronous Byzantine Distributed Networks,AI_GENERATED,1,Likely Human-Authored,28.9,Moderate,38.5,39.9,37.0,30.1,64.2,49.5,49.9
+AI_PHIL_01,Philosophy of Mind & Epistemology,The Metaphysical Hard Problem of Phenomenal Consciousness,AI_GENERATED,1,Surely Generated with AI,90.0,Very High,82.5,82.5,82.4,89.0,63.0,70.2,70.5
+AI_BIO_01,Biomedical Science & Genetics,CRISPR-Cas9 Precision Editing and Genomic Therapeutic Horizons,AI_GENERATED,1,Likely AI-Generated,72.0,Moderate,60.1,81.8,38.5,58.9,61.0,71.7,72.1
+AI_HIST_01,History & Political Philosophy,The Diplomatic Architecture of the Concert of Europe and Balance of Power,AI_GENERATED,1,Likely Human-Authored,26.8,Moderate,35.7,36.6,34.7,22.0,68.6,49.4,49.7
+HUM_DEV_01,Computer Science & Engineering,Graphics Pipeline Debugging and Memory Management Dev Log,HUMAN_AUTHORED,0,Likely Human-Authored,20.9,High,27.8,27.5,28.1,22.0,47.0,36.1,36.5
+HUM_PHIL_01,Philosophy of Mind & Phenomenology,On the Felt Texture of Lived Experience and Subjectivity,HUMAN_AUTHORED,0,Likely Human-Authored,19.4,High,25.9,25.7,26.2,22.0,40.3,32.5,32.8
+HUM_HIST_01,History & Political Memoirs,"Reflections on War, Statecraft, and Historical Accidents",HUMAN_AUTHORED,0,Likely Human-Authored,23.8,Moderate,31.7,31.7,31.7,22.0,61.1,44.3,44.6
+HUM_ECON_01,Economics & Social Observations,The Ground Reality of Local Markets vs Abstract Econometric Models,HUMAN_AUTHORED,0,Likely Human-Authored,24.7,Moderate,32.9,32.8,33.0,22.0,63.7,46.2,46.6
+HUM_BIO_01,Biomedical & Laboratory Field Notes,Lab Troubles and Serendipity in Cell Culture Experiments,HUMAN_AUTHORED,0,Likely Human-Authored,22.6,Moderate,30.1,30.1,30.1,22.0,56.9,41.6,42.0
+HUM_COG_01,Cognitive Science & Personal Learning,Struggling with Memory and Long-Form Reading in a Distracted Age,HUMAN_AUTHORED,0,Likely Human-Authored,21.1,Moderate,28.2,28.8,27.7,22.0,50.2,36.1,36.6
+HYB_COG_01,Cognitive Science & Neuroscience,AI Impact on Human Brain (Humanized & Burstiness Styled),HYBRID_ASSISTED,1,Surely Generated with AI,90.0,Very High,79.6,79.6,79.6,89.0,43.9,60.7,61.0
+HYB_ECON_01,Economics & Quantitative Finance,High Frequency Trading Systems (Edited Hybrid),HYBRID_ASSISTED,1,Likely Human-Authored,20.6,High,27.5,27.4,27.7,22.0,47.2,36.2,36.5
+HYB_CS_01,Computer Science & Distributed Systems,Distributed Consensus and Fault Tolerance (Edited Hybrid),HYBRID_ASSISTED,1,Likely Human-Authored,21.8,Moderate,29.1,29.1,29.1,22.0,54.4,40.2,40.6

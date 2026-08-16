@@ -1,0 +1,72 @@
+{
+  "Full_Proposed_Model": {
+    "accuracy": 66.67,
+    "precision": 100.0,
+    "recall": 44.44,
+    "f1_score": 61.54,
+    "fpr": 0.0,
+    "fnr": 55.56,
+    "roc_auc": 0.713,
+    "tp": 4,
+    "tn": 6,
+    "fp": 0,
+    "fn": 5,
+    "total_samples": 15
+  },
+  "Ablation_No_Bipartite": {
+    "accuracy": 66.67,
+    "precision": 100.0,
+    "recall": 44.44,
+    "f1_score": 61.54,
+    "fpr": 0.0,
+    "fnr": 55.56,
+    "roc_auc": 0.75,
+    "tp": 4,
+    "tn": 6,
+    "fp": 0,
+    "fn": 5,
+    "total_samples": 15
+  },
+  "Ablation_Static_Weights_40_40": {
+    "accuracy": 66.67,
+    "precision": 100.0,
+    "recall": 44.44,
+    "f1_score": 61.54,
+    "fpr": 0.0,
+    "fnr": 55.56,
+    "roc_auc": 0.713,
+    "tp": 4,
+    "tn": 6,
+    "fp": 0,
+    "fn": 5,
+    "total_samples": 15
+  },
+  "Ablation_Pass_2_Only": {
+    "accuracy": 66.67,
+    "precision": 100.0,
+    "recall": 44.44,
+    "f1_score": 61.54,
+    "fpr": 0.0,
+    "fnr": 55.56,
+    "roc_auc": 0.713,
+    "tp": 4,
+    "tn": 6,
+    "fp": 0,
+    "fn": 5,
+    "total_samples": 15
+  },
+  "Ablation_Pass_3_Only": {
+    "accuracy": 60.0,
+    "precision": 100.0,
+    "recall": 33.33,
+    "f1_score": 50.0,
+    "fpr": 0.0,
+    "fnr": 66.67,
+    "roc_auc": 0.713,
+    "tp": 3,
+    "tn": 6,
+    "fp": 0,
+    "fn": 6,
+    "total_samples": 15
+  }
+}

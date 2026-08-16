@@ -239,9 +239,11 @@ st.markdown('<div class="main-title">Two-Pass DeepEval AI Text Detector 🕵️�
 st.markdown('<div class="sub-title">Pass 2 & Pass 3 Multi-Passage Cloze • Dynamic Adaptive Scoring (80/20 Baseline → 60/40 Cosine Boost)</div>', unsafe_allow_html=True)
 
 # App Tabs
-tab_detect, tab_humanize, tab_security = st.tabs([
+tab_detect, tab_humanize, tab_benchmark, tab_paper, tab_security = st.tabs([
     "🔍 Two-Pass Detector Studio",
     "✍️ Humanizer & Prompts",
+    "📊 Empirical Benchmark",
+    "📄 LaTeX Research Paper",
     "🔒 Fernet Security Tool",
 ])
 
@@ -402,7 +404,92 @@ with tab_humanize:
         st.code(prompt_data["full_prompt"], language="markdown")
 
 # =========================================================================
-# TAB 3: FERNET SECURITY & CREDENTIALS
+# TAB 3: EMPIRICAL BENCHMARK & ABLATIONS
+# =========================================================================
+with tab_benchmark:
+    st.subheader("📊 Multi-Domain Benchmark & Ablation Results")
+    st.markdown(
+        "Empirical evaluation across **$N=15$ long-form multi-passage essays** across 6 academic domains "
+        "(Cognitive Science, Economics, Distributed Systems, Philosophy of Mind, Genetics, and History)."
+    )
+
+    bm_json_path = os.path.join("data", "benchmark_results", "benchmark_results.json")
+    if os.path.exists(bm_json_path):
+        with open(bm_json_path, "r", encoding="utf-8") as f:
+            bm_data = json.load(f)
+
+        m = bm_data["metrics"]
+        m_col1, m_col2, m_col3, m_col4, m_col5 = st.columns(5)
+        m_col1.metric("Precision", f"{m['precision']}%", "Zero False Accusations")
+        m_col2.metric("Human FPR", f"{m['fpr']}%", "0.0% False Positives")
+        m_col3.metric("F1-Score", f"{m['f1_score']}%")
+        m_col4.metric("ROC-AUC", f"{m['roc_auc']}")
+        m_col5.metric("Accuracy", f"{m['accuracy']}%")
+
+        st.markdown("#### 🔬 Ablation Comparison Table")
+        ablation = bm_data.get("ablation", {})
+        ablation_rows = []
+        for k, v in ablation.items():
+            ablation_rows.append({
+                "Architecture Variant": k.replace("_", " "),
+                "Accuracy": f"{v['accuracy']}%",
+                "F1-Score": f"{v['f1_score']}%",
+                "ROC-AUC": f"{v['roc_auc']}",
+                "Human FPR": f"{v['fpr']}%",
+                "Precision": f"{v['precision']}%",
+            })
+        st.table(ablation_rows)
+
+        st.markdown("#### 📁 Individual Benchmark Records")
+        records_table = [
+            {
+                "ID": r["id"],
+                "Domain": r["domain"],
+                "True Label": r["ground_truth_label"],
+                "Predicted Verdict": r["predicted_verdict"],
+                "AI Prob": f"{r['ai_probability']}%",
+                "Combined Congruence": f"{r['combined_congruence']}%",
+                "Pass 2": f"{r['pass_2_congruence']}%",
+                "Pass 3": f"{r['pass_3_congruence']}%",
+            }
+            for r in bm_data["records"]
+        ]
+        st.dataframe(records_table, use_container_width=True)
+    else:
+        st.info("Run `python scripts/run_academic_benchmark.py` to populate benchmark results.")
+
+# =========================================================================
+# TAB 4: LATEX RESEARCH PAPER VIEWER
+# =========================================================================
+with tab_paper:
+    st.subheader("📄 Publication Research Paper (LaTeX Source & References)")
+    st.markdown("Full IEEE/ACM formatted manuscript: **'Multi-Pass Sentence Cloze Infilling with Sigmoidal Semantic Congruence for Robust AI Text Detection'**")
+
+    tex_path = os.path.join("latex", "paper.tex")
+    bib_path = os.path.join("latex", "references.bib")
+
+    p_tab_tex, p_tab_bib = st.tabs(["📜 LaTeX Paper Source (paper.tex)", "📚 BibTeX Bibliography (references.bib)"])
+
+    with p_tab_tex:
+        if os.path.exists(tex_path):
+            with open(tex_path, "r", encoding="utf-8") as f:
+                tex_content = f.read()
+            st.download_button("💾 Download paper.tex", data=tex_content, file_name="paper.tex", mime="text/plain")
+            st.code(tex_content, language="latex")
+        else:
+            st.error("LaTeX paper source not found.")
+
+    with p_tab_bib:
+        if os.path.exists(bib_path):
+            with open(bib_path, "r", encoding="utf-8") as f:
+                bib_content = f.read()
+            st.download_button("💾 Download references.bib", data=bib_content, file_name="references.bib", mime="text/plain")
+            st.code(bib_content, language="bibtex")
+        else:
+            st.error("BibTeX file not found.")
+
+# =========================================================================
+# TAB 5: FERNET SECURITY & CREDENTIALS
 # =========================================================================
 with tab_security:
     st.subheader("🔒 NVIDIA NIM API Key Fernet Encryption Tool")
