@@ -12,11 +12,11 @@ def main():
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload on file change")
     args = parser.parse_args()
 
-    print(f"\n=======================================================")
-    print(f" 🕵️‍♂️ Starting ClozeCongruence AI Text Detector Playground")
+    print("\n=======================================================")
+    print(" Starting ClozeCongruence AI Text Detector Playground")
     print(f" URL: http://{args.host}:{args.port}")
     print(f" Docs: http://{args.host}:{args.port}/docs")
-    print(f"=======================================================\n")
+    print("=======================================================\n")
 
     uvicorn.run("src.web.app:app", host=args.host, port=args.port, reload=args.reload)
 
