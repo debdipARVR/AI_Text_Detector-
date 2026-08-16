@@ -1,0 +1,241 @@
+Essay_ID,Domain_Group,Topic,Ground_Truth,Predicted_Verdict,AI_Probability,Combined_Congruence,Pass_2_Congruence,Pass_3_Congruence,Pass_Delta,Confidence_Score,Burstiness,Word_Count
+AI_001,Group 1: Conceptual & Epistemology,The Nature of Mathematical Truth and Platonism,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,247
+AI_002,Group 1: Conceptual & Epistemology,Rationalism versus Radical Empiricism in Epistemology,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,245
+AI_003,Group 1: Conceptual & Epistemology,The Concept of Free Will in a Deterministic Universe,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_004,Group 1: Conceptual & Epistemology,Pragmatism as a Criterion of Scientific Truth,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,247
+AI_005,Group 1: Conceptual & Epistemology,The Ontology of Abstract Objects and Properties,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,247
+AI_006,Group 1: Conceptual & Epistemology,Epistemic Injustice and Hermeneutical Deficits,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,243
+AI_007,Group 1: Conceptual & Epistemology,The Problem of Induction and Popperian Falsification,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,247
+AI_008,Group 1: Conceptual & Epistemology,Phenomenological Structures of Lived Time and Memory,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,247
+AI_009,Group 1: Conceptual & Epistemology,Coherentism versus Foundationalism in Justification,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,243
+AI_010,Group 1: Conceptual & Epistemology,The Semantic Distinction Between Sense and Reference,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,247
+AI_011,Group 1: Conceptual & Epistemology,Moral Realism and the Objectivity of Ethical Values,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_012,Group 1: Conceptual & Epistemology,The Ship of Theseus and Diachronic Personal Identity,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_013,Group 1: Conceptual & Epistemology,Modal Realism and the Metaphysics of Possible Worlds,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_014,Group 1: Conceptual & Epistemology,Structural Realism in the Philosophy of Physics,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,247
+AI_015,Group 1: Conceptual & Epistemology,The Social Construction of Normative Concepts,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,245
+AI_016,Group 1: Conceptual & Epistemology,Internalism versus Externalism in Mental Content,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,245
+AI_017,Group 1: Conceptual & Epistemology,The Teleological Hypothesis and Evolutionary Biology,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,245
+AI_018,Group 1: Conceptual & Epistemology,Aesthetic Value and Objective Criteria in Fine Arts,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_019,Group 1: Conceptual & Epistemology,The Hard Problem of Subjective Experience and Qualia,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_020,Group 1: Conceptual & Epistemology,Virtue Epistemology and Intellectual Character,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,243
+HUM_021,Group 1: Conceptual & Epistemology,The Nature of Mathematical Truth and Platonism,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.2,29.1,0.0,95.0,0.0,235
+HUM_022,Group 1: Conceptual & Epistemology,Rationalism versus Radical Empiricism in Epistemology,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,222
+HUM_023,Group 1: Conceptual & Epistemology,The Concept of Free Will in a Deterministic Universe,HUMAN_AUTHORED,Likely Human-Authored,21.7,28.9,29.0,28.9,0.0,95.0,0.0,239
+HUM_024,Group 1: Conceptual & Epistemology,Pragmatism as a Criterion of Scientific Truth,HUMAN_AUTHORED,Likely Human-Authored,21.6,28.8,28.8,28.7,0.0,95.0,0.0,235
+HUM_025,Group 1: Conceptual & Epistemology,The Ontology of Abstract Objects and Properties,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.7,42.7,42.7,0.0,95.0,0.0,233
+HUM_026,Group 1: Conceptual & Epistemology,Epistemic Injustice and Hermeneutical Deficits,HUMAN_AUTHORED,Likely Human-Authored,32.2,42.9,42.9,42.9,0.0,95.0,0.0,227
+HUM_027,Group 1: Conceptual & Epistemology,The Problem of Induction and Popperian Falsification,HUMAN_AUTHORED,Likely Human-Authored,32.2,43.0,43.0,43.0,0.0,95.0,0.0,233
+HUM_028,Group 1: Conceptual & Epistemology,Phenomenological Structures of Lived Time and Memory,HUMAN_AUTHORED,Likely Human-Authored,21.7,28.9,29.0,28.9,0.0,95.0,0.0,235
+HUM_029,Group 1: Conceptual & Epistemology,Coherentism versus Foundationalism in Justification,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,219
+HUM_030,Group 1: Conceptual & Epistemology,The Semantic Distinction Between Sense and Reference,HUMAN_AUTHORED,Likely Human-Authored,32.1,42.8,42.8,42.8,0.0,95.0,0.0,233
+HUM_031,Group 1: Conceptual & Epistemology,Moral Realism and the Objectivity of Ethical Values,HUMAN_AUTHORED,Likely Human-Authored,32.2,42.9,42.9,42.9,0.0,95.0,0.0,236
+HUM_032,Group 1: Conceptual & Epistemology,The Ship of Theseus and Diachronic Personal Identity,HUMAN_AUTHORED,Likely Human-Authored,32.1,42.8,42.8,42.8,0.0,95.0,0.0,236
+HUM_033,Group 1: Conceptual & Epistemology,Modal Realism and the Metaphysics of Possible Worlds,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,228
+HUM_034,Group 1: Conceptual & Epistemology,Structural Realism in the Philosophy of Physics,HUMAN_AUTHORED,Likely Human-Authored,21.7,28.9,29.0,28.9,0.0,95.0,0.0,235
+HUM_035,Group 1: Conceptual & Epistemology,The Social Construction of Normative Concepts,HUMAN_AUTHORED,Likely Human-Authored,32.1,42.8,42.8,42.8,0.0,95.0,0.0,230
+HUM_036,Group 1: Conceptual & Epistemology,Internalism versus Externalism in Mental Content,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,222
+HUM_037,Group 1: Conceptual & Epistemology,The Teleological Hypothesis and Evolutionary Biology,HUMAN_AUTHORED,Likely Human-Authored,32.2,42.9,42.9,42.9,0.0,95.0,0.0,230
+HUM_038,Group 1: Conceptual & Epistemology,Aesthetic Value and Objective Criteria in Fine Arts,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.6,42.6,42.6,0.0,95.0,0.0,236
+HUM_039,Group 1: Conceptual & Epistemology,The Hard Problem of Subjective Experience and Qualia,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,228
+HUM_040,Group 1: Conceptual & Epistemology,Virtue Epistemology and Intellectual Character,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.0,29.0,29.0,0.0,95.0,0.0,231
+AI_041,Group 2: Factual & Physical Sciences,Quantum Entanglement and Bell Inequality Violations,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,246
+AI_042,Group 2: Factual & Physical Sciences,Thermodynamic Irreversibility and the Arrow of Time,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,248
+AI_043,Group 2: Factual & Physical Sciences,Stellar Nucleosynthesis in Post-Main-Sequence Stars,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,244
+AI_044,Group 2: Factual & Physical Sciences,Plate Tectonics and Subduction Zone Geodynamics,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,246
+AI_045,Group 2: Factual & Physical Sciences,CRISPR-Cas9 Mechanism in Targeted Genome Editing,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,246
+AI_046,Group 2: Factual & Physical Sciences,Ribosomal Translation Kinetics in Molecular Biology,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,246
+AI_047,Group 2: Factual & Physical Sciences,Atmospheric Fluid Dynamics and Rossby Wave Propagation,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,248
+AI_048,Group 2: Factual & Physical Sciences,High-Temperature Superconductivity in Cuprate Materials,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,244
+AI_049,Group 2: Factual & Physical Sciences,Cosmic Microwave Background Anisotropies and Inflation,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,246
+AI_050,Group 2: Factual & Physical Sciences,Mitochondrial Bioenergetics and ATP Synthase Rotary Dynamics,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,248
+AI_051,Group 2: Factual & Physical Sciences,Geomagnetic Reversals and Core Dynamo Mechanics,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,246
+AI_052,Group 2: Factual & Physical Sciences,Enzyme Catalytic Efficiency and Transition State Stabilization,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,248
+AI_053,Group 2: Factual & Physical Sciences,Exoplanet Transit Spectroscopy and Atmospheric Biosignatures,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,246
+AI_054,Group 2: Factual & Physical Sciences,Semiconductor Bandgap Engineering in Photovoltaic Cells,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,246
+AI_055,Group 2: Factual & Physical Sciences,Oceanic Thermohaline Circulation and Deep Water Formation,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,248
+AI_056,Group 2: Factual & Physical Sciences,Mass Extinction Mechanisms at the Permian-Triassic Boundary,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,248
+AI_057,Group 2: Factual & Physical Sciences,Topological Insulators and Quantum Hall Effects,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,246
+AI_058,Group 2: Factual & Physical Sciences,Viral Capsid Self-Assembly Kinetics and Symmetry,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,246
+AI_059,Group 2: Factual & Physical Sciences,Dark Matter Detection via Cryogenic Noble Liquid Detectors,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,250
+AI_060,Group 2: Factual & Physical Sciences,Photosynthetic Charge Separation in Photosystem II,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,246
+HUM_061,Group 2: Factual & Physical Sciences,Quantum Entanglement and Bell Inequality Violations,HUMAN_AUTHORED,Likely Human-Authored,22.0,29.3,29.4,29.2,0.0,95.0,0.0,233
+HUM_062,Group 2: Factual & Physical Sciences,Thermodynamic Irreversibility and the Arrow of Time,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_063,Group 2: Factual & Physical Sciences,Stellar Nucleosynthesis in Post-Main-Sequence Stars,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.1,29.0,0.0,95.0,0.0,231
+HUM_064,Group 2: Factual & Physical Sciences,Plate Tectonics and Subduction Zone Geodynamics,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.2,29.1,0.0,95.0,0.0,233
+HUM_065,Group 2: Factual & Physical Sciences,CRISPR-Cas9 Mechanism in Targeted Genome Editing,HUMAN_AUTHORED,Likely Human-Authored,21.7,28.9,29.0,28.9,0.0,95.0,0.0,233
+HUM_066,Group 2: Factual & Physical Sciences,Ribosomal Translation Kinetics in Molecular Biology,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.1,29.0,0.0,95.0,0.0,233
+HUM_067,Group 2: Factual & Physical Sciences,Atmospheric Fluid Dynamics and Rossby Wave Propagation,HUMAN_AUTHORED,Likely Human-Authored,31.9,42.5,42.5,42.5,0.0,95.0,0.0,234
+HUM_068,Group 2: Factual & Physical Sciences,High-Temperature Superconductivity in Cuprate Materials,HUMAN_AUTHORED,Likely Human-Authored,32.2,43.0,43.0,43.0,0.0,95.0,0.0,228
+HUM_069,Group 2: Factual & Physical Sciences,Cosmic Microwave Background Anisotropies and Inflation,HUMAN_AUTHORED,Likely Human-Authored,22.0,29.4,29.5,29.3,0.0,95.0,0.0,233
+HUM_070,Group 2: Factual & Physical Sciences,Mitochondrial Bioenergetics and ATP Synthase Rotary Dynamics,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.6,42.6,42.6,0.0,95.0,0.0,234
+HUM_071,Group 2: Factual & Physical Sciences,Geomagnetic Reversals and Core Dynamo Mechanics,HUMAN_AUTHORED,Likely Human-Authored,21.9,29.2,29.3,29.2,0.0,95.0,0.0,233
+HUM_072,Group 2: Factual & Physical Sciences,Enzyme Catalytic Efficiency and Transition State Stabilization,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.6,42.6,42.6,0.0,95.0,0.0,234
+HUM_073,Group 2: Factual & Physical Sciences,Exoplanet Transit Spectroscopy and Atmospheric Biosignatures,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,222
+HUM_074,Group 2: Factual & Physical Sciences,Semiconductor Bandgap Engineering in Photovoltaic Cells,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.7,42.7,42.7,0.0,95.0,0.0,231
+HUM_075,Group 2: Factual & Physical Sciences,Oceanic Thermohaline Circulation and Deep Water Formation,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_076,Group 2: Factual & Physical Sciences,Mass Extinction Mechanisms at the Permian-Triassic Boundary,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_077,Group 2: Factual & Physical Sciences,Topological Insulators and Quantum Hall Effects,HUMAN_AUTHORED,Likely Human-Authored,31.9,42.5,42.5,42.5,0.0,95.0,0.0,231
+HUM_078,Group 2: Factual & Physical Sciences,Viral Capsid Self-Assembly Kinetics and Symmetry,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,222
+HUM_079,Group 2: Factual & Physical Sciences,Dark Matter Detection via Cryogenic Noble Liquid Detectors,HUMAN_AUTHORED,Likely Human-Authored,31.9,42.5,42.5,42.5,0.0,95.0,0.0,237
+HUM_080,Group 2: Factual & Physical Sciences,Photosynthetic Charge Separation in Photosystem II,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.2,29.1,0.0,95.0,0.0,233
+AI_081,Group 3: Applied Computing & Distributed Systems,Byzantine Fault Tolerance in Asynchronous State Machine Replication,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_082,Group 3: Applied Computing & Distributed Systems,Log-Structured Merge Trees in Distributed Key-Value Stores,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_083,Group 3: Applied Computing & Distributed Systems,Optimistic Concurrency Control in Modern Multi-Core Databases,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_084,Group 3: Applied Computing & Distributed Systems,Cache Coherence Protocols in Non-Uniform Memory Access Architectures,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_085,Group 3: Applied Computing & Distributed Systems,Zero-Knowledge SNARKs in Cryptographic Privacy Verification,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,247
+AI_086,Group 3: Applied Computing & Distributed Systems,Memory Safety Semantics and Ownership Models in Systems Programming,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,253
+AI_087,Group 3: Applied Computing & Distributed Systems,Raft Consensus Protocol versus Multi-Paxos Performance Guarantees,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_088,Group 3: Applied Computing & Distributed Systems,Static Program Analysis using Abstract Interpretation Frameworks,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_089,Group 3: Applied Computing & Distributed Systems,Garbage Collection Latency in Concurrent Generational Runtimes,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_090,Group 3: Applied Computing & Distributed Systems,Vectorized Execution Engines in Analytical Database Systems,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_091,Group 3: Applied Computing & Distributed Systems,Network Congestion Control via Explicit Congestion Notification,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_092,Group 3: Applied Computing & Distributed Systems,Software-Defined Networking Control Plane Scalability,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,245
+AI_093,Group 3: Applied Computing & Distributed Systems,Hardware-Accelerated Ray Tracing and Bounding Volume Hierarchies,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_094,Group 3: Applied Computing & Distributed Systems,Formal Verification of Microkernel Architectures via Isabelle/HOL,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_095,Group 3: Applied Computing & Distributed Systems,Distributed Lock Managers and Deadlock Detection in Cloud Storage,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,253
+AI_096,Group 3: Applied Computing & Distributed Systems,Compiler Auto-Vectorization and SIMD Instruction Scheduling,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,247
+AI_097,Group 3: Applied Computing & Distributed Systems,Edge-Computing Task Offloading under Latency and Energy Constraints,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_098,Group 3: Applied Computing & Distributed Systems,Consensus Invariants in Partition-Tolerant Distributed Ledgers,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,247
+AI_099,Group 3: Applied Computing & Distributed Systems,Dynamic Binary Translation and Just-In-Time Code Generation,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_100,Group 3: Applied Computing & Distributed Systems,Graph Neural Network Message Passing Scalability on Massive Graphs,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,253
+HUM_101,Group 3: Applied Computing & Distributed Systems,Byzantine Fault Tolerance in Asynchronous State Machine Replication,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.2,29.1,0.0,95.0,0.0,237
+HUM_102,Group 3: Applied Computing & Distributed Systems,Log-Structured Merge Trees in Distributed Key-Value Stores,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.1,29.0,0.0,95.0,0.0,235
+HUM_103,Group 3: Applied Computing & Distributed Systems,Optimistic Concurrency Control in Modern Multi-Core Databases,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_104,Group 3: Applied Computing & Distributed Systems,Cache Coherence Protocols in Non-Uniform Memory Access Architectures,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,228
+HUM_105,Group 3: Applied Computing & Distributed Systems,Zero-Knowledge SNARKs in Cryptographic Privacy Verification,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,222
+HUM_106,Group 3: Applied Computing & Distributed Systems,Memory Safety Semantics and Ownership Models in Systems Programming,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.1,29.0,0.0,95.0,0.0,239
+HUM_107,Group 3: Applied Computing & Distributed Systems,Raft Consensus Protocol versus Multi-Paxos Performance Guarantees,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.2,29.0,0.0,95.0,0.0,235
+HUM_108,Group 3: Applied Computing & Distributed Systems,Static Program Analysis using Abstract Interpretation Frameworks,HUMAN_AUTHORED,Likely Human-Authored,21.9,29.2,29.3,29.1,0.0,95.0,0.0,235
+HUM_109,Group 3: Applied Computing & Distributed Systems,Garbage Collection Latency in Concurrent Generational Runtimes,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_110,Group 3: Applied Computing & Distributed Systems,Vectorized Execution Engines in Analytical Database Systems,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_111,Group 3: Applied Computing & Distributed Systems,Network Congestion Control via Explicit Congestion Notification,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_112,Group 3: Applied Computing & Distributed Systems,Software-Defined Networking Control Plane Scalability,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.1,29.0,0.0,95.0,0.0,231
+HUM_113,Group 3: Applied Computing & Distributed Systems,Hardware-Accelerated Ray Tracing and Bounding Volume Hierarchies,HUMAN_AUTHORED,Likely Human-Authored,32.2,42.9,42.9,42.9,0.0,95.0,0.0,235
+HUM_114,Group 3: Applied Computing & Distributed Systems,Formal Verification of Microkernel Architectures via Isabelle/HOL,HUMAN_AUTHORED,Likely Human-Authored,32.2,42.9,42.9,42.9,0.0,95.0,0.0,235
+HUM_115,Group 3: Applied Computing & Distributed Systems,Distributed Lock Managers and Deadlock Detection in Cloud Storage,HUMAN_AUTHORED,Likely Human-Authored,21.9,29.2,29.3,29.2,0.0,95.0,0.0,239
+HUM_116,Group 3: Applied Computing & Distributed Systems,Compiler Auto-Vectorization and SIMD Instruction Scheduling,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,222
+HUM_117,Group 3: Applied Computing & Distributed Systems,Edge-Computing Task Offloading under Latency and Energy Constraints,HUMAN_AUTHORED,Likely Human-Authored,32.2,42.9,42.9,42.9,0.0,95.0,0.0,238
+HUM_118,Group 3: Applied Computing & Distributed Systems,Consensus Invariants in Partition-Tolerant Distributed Ledgers,HUMAN_AUTHORED,Likely Human-Authored,22.0,29.4,29.5,29.3,0.0,95.0,0.0,233
+HUM_119,Group 3: Applied Computing & Distributed Systems,Dynamic Binary Translation and Just-In-Time Code Generation,HUMAN_AUTHORED,Likely Human-Authored,32.1,42.8,42.8,42.8,0.0,95.0,0.0,235
+HUM_120,Group 3: Applied Computing & Distributed Systems,Graph Neural Network Message Passing Scalability on Massive Graphs,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.6,42.6,42.6,0.0,95.0,0.0,241
+AI_121,Group 4: Macroeconomics & Market Microstructure,Monetary Policy Transmission Mechanism in Zero Lower Bound Regimes,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,252
+AI_122,Group 4: Macroeconomics & Market Microstructure,Limit Order Book Dynamics and High-Frequency Liquidity Provision,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,250
+AI_123,Group 4: Macroeconomics & Market Microstructure,Endogenous Growth Theory and R&D Spillover Externalities,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,248
+AI_124,Group 4: Macroeconomics & Market Microstructure,Sovereign Debt Sustainability and Fiscal Multipliers in Recessions,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,250
+AI_125,Group 4: Macroeconomics & Market Microstructure,Market Design in Combinatorial Spectrum Auctions,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,246
+AI_126,Group 4: Macroeconomics & Market Microstructure,The Microfoundations of Price Stickiness in New Keynesian Models,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,252
+AI_127,Group 4: Macroeconomics & Market Microstructure,Financial Intermediation and Systemic Risk in Interbank Networks,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,250
+AI_128,Group 4: Macroeconomics & Market Microstructure,Trade Liberalization Effects on Heterogeneous Firm Productivity,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,248
+AI_129,Group 4: Macroeconomics & Market Microstructure,Asset Pricing Bubbles and Heterogeneous Beliefs in Financial Markets,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,252
+AI_130,Group 4: Macroeconomics & Market Microstructure,Behavioral Macroeconomics and Bounded Rationality in Expectation Formation,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,250
+AI_131,Group 4: Macroeconomics & Market Microstructure,Commodity Price Volatility and Dutch Disease Dynamics,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,248
+AI_132,Group 4: Macroeconomics & Market Microstructure,Labor Market Search Frictions and Wage Dispersion in Diamond-Mortensen-Pissarides,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,252
+AI_133,Group 4: Macroeconomics & Market Microstructure,Optimal Taxation under Asymmetric Information and Mirrlees Principles,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,250
+AI_134,Group 4: Macroeconomics & Market Microstructure,Algorithmic Market Making and Flash Crash Propagation,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,248
+AI_135,Group 4: Macroeconomics & Market Microstructure,Real Business Cycle Theory versus Monetary Equilibrium Models,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,250
+AI_136,Group 4: Macroeconomics & Market Microstructure,Capital Flow Volatility and Foreign Exchange Reserves in Emerging Markets,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,254
+AI_137,Group 4: Macroeconomics & Market Microstructure,Decentralized Finance Automated Market Maker Liquidity Curves,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,248
+AI_138,Group 4: Macroeconomics & Market Microstructure,Corporate Governance Mechanisms and Principal-Agent Inefficiencies,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,246
+AI_139,Group 4: Macroeconomics & Market Microstructure,Inflation Expectations Anchoring in Inflation Targeting Frameworks,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,248
+AI_140,Group 4: Macroeconomics & Market Microstructure,Spatial Economics and Agglomeration Economies in Metropolitan Regions,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,250
+HUM_141,Group 4: Macroeconomics & Market Microstructure,Monetary Policy Transmission Mechanism in Zero Lower Bound Regimes,HUMAN_AUTHORED,Likely Human-Authored,32.1,42.8,42.8,42.8,0.0,95.0,0.0,240
+HUM_142,Group 4: Macroeconomics & Market Microstructure,Limit Order Book Dynamics and High-Frequency Liquidity Provision,HUMAN_AUTHORED,Likely Human-Authored,31.8,42.4,42.4,42.4,0.0,95.0,0.0,237
+HUM_143,Group 4: Macroeconomics & Market Microstructure,Endogenous Growth Theory and R&D Spillover Externalities,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_144,Group 4: Macroeconomics & Market Microstructure,Sovereign Debt Sustainability and Fiscal Multipliers in Recessions,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,228
+HUM_145,Group 4: Macroeconomics & Market Microstructure,Market Design in Combinatorial Spectrum Auctions,HUMAN_AUTHORED,Likely Human-Authored,31.9,42.5,42.5,42.5,0.0,95.0,0.0,231
+HUM_146,Group 4: Macroeconomics & Market Microstructure,The Microfoundations of Price Stickiness in New Keynesian Models,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,231
+HUM_147,Group 4: Macroeconomics & Market Microstructure,Financial Intermediation and Systemic Risk in Interbank Networks,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.6,42.6,42.6,0.0,95.0,0.0,237
+HUM_148,Group 4: Macroeconomics & Market Microstructure,Trade Liberalization Effects on Heterogeneous Firm Productivity,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.1,29.0,0.0,95.0,0.0,235
+HUM_149,Group 4: Macroeconomics & Market Microstructure,Asset Pricing Bubbles and Heterogeneous Beliefs in Financial Markets,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.2,29.0,0.0,95.0,0.0,239
+HUM_150,Group 4: Macroeconomics & Market Microstructure,Behavioral Macroeconomics and Bounded Rationality in Expectation Formation,HUMAN_AUTHORED,Likely Human-Authored,22.3,29.7,29.8,29.6,0.0,95.0,0.0,237
+HUM_151,Group 4: Macroeconomics & Market Microstructure,Commodity Price Volatility and Dutch Disease Dynamics,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.0,29.0,29.0,0.0,95.0,0.0,235
+HUM_152,Group 4: Macroeconomics & Market Microstructure,Labor Market Search Frictions and Wage Dispersion in Diamond-Mortensen-Pissarides,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,231
+HUM_153,Group 4: Macroeconomics & Market Microstructure,Optimal Taxation under Asymmetric Information and Mirrlees Principles,HUMAN_AUTHORED,Likely Human-Authored,22.1,29.5,29.6,29.4,0.0,95.0,0.0,237
+HUM_154,Group 4: Macroeconomics & Market Microstructure,Algorithmic Market Making and Flash Crash Propagation,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.7,42.7,42.7,0.0,95.0,0.0,234
+HUM_155,Group 4: Macroeconomics & Market Microstructure,Real Business Cycle Theory versus Monetary Equilibrium Models,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,228
+HUM_156,Group 4: Macroeconomics & Market Microstructure,Capital Flow Volatility and Foreign Exchange Reserves in Emerging Markets,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.2,29.1,0.0,95.0,0.0,241
+HUM_157,Group 4: Macroeconomics & Market Microstructure,Decentralized Finance Automated Market Maker Liquidity Curves,HUMAN_AUTHORED,Likely Human-Authored,21.7,28.9,29.0,28.9,0.0,95.0,0.0,235
+HUM_158,Group 4: Macroeconomics & Market Microstructure,Corporate Governance Mechanisms and Principal-Agent Inefficiencies,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.6,42.6,42.6,0.0,95.0,0.0,231
+HUM_159,Group 4: Macroeconomics & Market Microstructure,Inflation Expectations Anchoring in Inflation Targeting Frameworks,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_160,Group 4: Macroeconomics & Market Microstructure,Spatial Economics and Agglomeration Economies in Metropolitan Regions,HUMAN_AUTHORED,Likely Human-Authored,22.1,29.5,29.6,29.4,0.0,95.0,0.0,237
+AI_161,Group 5: Cognitive Psychology & Learning Theory,Working Memory Capacity and Executive Function Resource Allocation,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_162,Group 5: Cognitive Psychology & Learning Theory,Dual-Process Theory of Decision Making and Heuristic Biases,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_163,Group 5: Cognitive Psychology & Learning Theory,Spaced Retrieval Practice and Long-Term Memory Consolidation,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_164,Group 5: Cognitive Psychology & Learning Theory,Visual Attention Bottlenecks in Rapid Serial Visual Presentation,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_165,Group 5: Cognitive Psychology & Learning Theory,Language Acquisition Mechanisms in Early Childhood Development,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_166,Group 5: Cognitive Psychology & Learning Theory,Metacognitive Monitoring Accuracy in Self-Regulated Learning,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,247
+AI_167,Group 5: Cognitive Psychology & Learning Theory,Cognitive Load Theory and Instructional Design Principles,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_168,Group 5: Cognitive Psychology & Learning Theory,Neuroplasticity Across the Human Lifespan and Critical Periods,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_169,Group 5: Cognitive Psychology & Learning Theory,The Interplay Between Affective States and Risk Perception,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_170,Group 5: Cognitive Psychology & Learning Theory,Schema Theory and Constructive Memory Distortion in Eyewitnesses,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_171,Group 5: Cognitive Psychology & Learning Theory,Implicit Learning Mechanisms in Complex Motor Skill Acquisition,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_172,Group 5: Cognitive Psychology & Learning Theory,The Neural Correlates of Flow State in High-Performance Tasks,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,253
+AI_173,Group 5: Cognitive Psychology & Learning Theory,Sleep Architecture and Synaptic Homeostasis in Memory Reorganization,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_174,Group 5: Cognitive Psychology & Learning Theory,Theory of Mind Development in Social Cognition,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_175,Group 5: Cognitive Psychology & Learning Theory,Sensory Substitution and Cross-Modal Cortical Plasticity,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,247
+AI_176,Group 5: Cognitive Psychology & Learning Theory,Goal Setting Mechanisms and Feedback Loops in Skill Mastery,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,253
+AI_177,Group 5: Cognitive Psychology & Learning Theory,Attribution Theory and Locus of Control in Academic Motivation,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,253
+AI_178,Group 5: Cognitive Psychology & Learning Theory,The Mirror Neuron System and Empathy in Interpersonal Coordination,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,253
+AI_179,Group 5: Cognitive Psychology & Learning Theory,Cognitive Flexibility and Task-Switching Latency Costs,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,247
+AI_180,Group 5: Cognitive Psychology & Learning Theory,Mindfulness Meditation Effects on Default Mode Network Connectivity,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+HUM_181,Group 5: Cognitive Psychology & Learning Theory,Working Memory Capacity and Executive Function Resource Allocation,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,228
+HUM_182,Group 5: Cognitive Psychology & Learning Theory,Dual-Process Theory of Decision Making and Heuristic Biases,HUMAN_AUTHORED,Likely Human-Authored,21.9,29.2,29.3,29.1,0.0,95.0,0.0,237
+HUM_183,Group 5: Cognitive Psychology & Learning Theory,Spaced Retrieval Practice and Long-Term Memory Consolidation,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_184,Group 5: Cognitive Psychology & Learning Theory,Visual Attention Bottlenecks in Rapid Serial Visual Presentation,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,228
+HUM_185,Group 5: Cognitive Psychology & Learning Theory,Language Acquisition Mechanisms in Early Childhood Development,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_186,Group 5: Cognitive Psychology & Learning Theory,Metacognitive Monitoring Accuracy in Self-Regulated Learning,HUMAN_AUTHORED,Likely Human-Authored,32.2,42.9,42.9,42.9,0.0,95.0,0.0,232
+HUM_187,Group 5: Cognitive Psychology & Learning Theory,Cognitive Load Theory and Instructional Design Principles,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_188,Group 5: Cognitive Psychology & Learning Theory,Neuroplasticity Across the Human Lifespan and Critical Periods,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.7,42.7,42.7,0.0,95.0,0.0,238
+HUM_189,Group 5: Cognitive Psychology & Learning Theory,The Interplay Between Affective States and Risk Perception,HUMAN_AUTHORED,Likely Human-Authored,21.9,29.2,29.3,29.2,0.0,95.0,0.0,237
+HUM_190,Group 5: Cognitive Psychology & Learning Theory,Schema Theory and Constructive Memory Distortion in Eyewitnesses,HUMAN_AUTHORED,Likely Human-Authored,22.0,29.4,29.4,29.3,0.0,95.0,0.0,237
+HUM_191,Group 5: Cognitive Psychology & Learning Theory,Implicit Learning Mechanisms in Complex Motor Skill Acquisition,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.7,42.7,42.7,0.0,95.0,0.0,238
+HUM_192,Group 5: Cognitive Psychology & Learning Theory,The Neural Correlates of Flow State in High-Performance Tasks,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.6,42.6,42.6,0.0,95.0,0.0,241
+HUM_193,Group 5: Cognitive Psychology & Learning Theory,Sleep Architecture and Synaptic Homeostasis in Memory Reorganization,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.6,42.6,42.6,0.0,95.0,0.0,238
+HUM_194,Group 5: Cognitive Psychology & Learning Theory,Theory of Mind Development in Social Cognition,HUMAN_AUTHORED,Likely Human-Authored,32.3,43.1,43.1,43.1,0.0,95.0,0.0,235
+HUM_195,Group 5: Cognitive Psychology & Learning Theory,Sensory Substitution and Cross-Modal Cortical Plasticity,HUMAN_AUTHORED,Likely Human-Authored,22.1,29.5,29.6,29.4,0.0,95.0,0.0,233
+HUM_196,Group 5: Cognitive Psychology & Learning Theory,Goal Setting Mechanisms and Feedback Loops in Skill Mastery,HUMAN_AUTHORED,Likely Human-Authored,21.7,28.9,29.0,28.9,0.0,95.0,0.0,239
+HUM_197,Group 5: Cognitive Psychology & Learning Theory,Attribution Theory and Locus of Control in Academic Motivation,HUMAN_AUTHORED,Likely Human-Authored,32.3,43.1,43.1,43.1,0.0,95.0,0.0,241
+HUM_198,Group 5: Cognitive Psychology & Learning Theory,The Mirror Neuron System and Empathy in Interpersonal Coordination,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.7,42.7,42.7,0.0,95.0,0.0,241
+HUM_199,Group 5: Cognitive Psychology & Learning Theory,Cognitive Flexibility and Task-Switching Latency Costs,HUMAN_AUTHORED,Likely Human-Authored,32.1,42.8,42.8,42.8,0.0,95.0,0.0,232
+HUM_200,Group 5: Cognitive Psychology & Learning Theory,Mindfulness Meditation Effects on Default Mode Network Connectivity,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.2,29.1,0.0,95.0,0.0,237
+AI_201,Group 6: Ecology & Earth Systems Science,Trophic Cascades and Apex Predator Reintroduction in Riparian Ecosystems,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,253
+AI_202,Group 6: Ecology & Earth Systems Science,Nitrogen and Phosphorus Biogeochemical Cycling in Eutrophic Lakes,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_203,Group 6: Ecology & Earth Systems Science,Boreal Forest Dynamics and Permafrost Thaw Feedback Loops,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_204,Group 6: Ecology & Earth Systems Science,Coral Reef Calcification Rates under Ocean Acidification Stress,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_205,Group 6: Ecology & Earth Systems Science,Urban Heat Island Mitigation through Vegetative Canopy Optimization,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_206,Group 6: Ecology & Earth Systems Science,Soil Microbial Community Resilience Following Wildfire Disturbances,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_207,Group 6: Ecology & Earth Systems Science,Mangrove Ecosystem Carbon Sequestration in Blue Carbon Reservoirs,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_208,Group 6: Ecology & Earth Systems Science,Hydrological Cycle Intensification in Polar and Alpine Watersheds,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_209,Group 6: Ecology & Earth Systems Science,Ecosystem Services Valuation and Natural Capital Accounting,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_210,Group 6: Ecology & Earth Systems Science,Pollinator Network Robustness in Fragmented Agricultural Landscapes,AI_GENERATED,Surely Generated with AI,90.0,83.7,83.4,84.0,0.0,95.0,0.0,249
+AI_211,Group 6: Ecology & Earth Systems Science,Phytoplankton Bloom Dynamics and Marine Carbon Pump Sequestration,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_212,Group 6: Ecology & Earth Systems Science,Wetland Restoration Hydrology and Heavy Metal Phytoremediation,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_213,Group 6: Ecology & Earth Systems Science,Arid Ecosystem Desertification Dynamics and Dryland Restoration,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_214,Group 6: Ecology & Earth Systems Science,Avian Migration Phenology Shifts in Response to Climate Warming,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,253
+AI_215,Group 6: Ecology & Earth Systems Science,Deep-Sea Hydrothermal Vent Microbial Symbiosis and Chemolithoautotrophy,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_216,Group 6: Ecology & Earth Systems Science,Forest Fire Regimes and Fuel Load Management in Mediterranean Biomes,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,255
+AI_217,Group 6: Ecology & Earth Systems Science,Groundwater Aquifer Depletion and Land Subsidence Geomechanics,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_218,Group 6: Ecology & Earth Systems Science,Invasive Species Colonization Dynamics in Island Biogeography,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+AI_219,Group 6: Ecology & Earth Systems Science,River Basin Sediment Transport Mechanics and Estuarine Deltas,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,251
+AI_220,Group 6: Ecology & Earth Systems Science,Microplastic Accumulation in Marine Pelagic Food Webs,AI_GENERATED,Likely AI-Generated,72.0,62.9,83.4,42.4,0.0,95.0,0.0,249
+HUM_221,Group 6: Ecology & Earth Systems Science,Trophic Cascades and Apex Predator Reintroduction in Riparian Ecosystems,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.7,42.7,42.7,0.0,95.0,0.0,241
+HUM_222,Group 6: Ecology & Earth Systems Science,Nitrogen and Phosphorus Biogeochemical Cycling in Eutrophic Lakes,HUMAN_AUTHORED,Likely Human-Authored,21.9,29.2,29.3,29.1,0.0,95.0,0.0,237
+HUM_223,Group 6: Ecology & Earth Systems Science,Boreal Forest Dynamics and Permafrost Thaw Feedback Loops,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,228
+HUM_224,Group 6: Ecology & Earth Systems Science,Coral Reef Calcification Rates under Ocean Acidification Stress,HUMAN_AUTHORED,Likely Human-Authored,22.0,29.4,29.5,29.3,0.0,95.0,0.0,237
+HUM_225,Group 6: Ecology & Earth Systems Science,Urban Heat Island Mitigation through Vegetative Canopy Optimization,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.7,42.7,42.7,0.0,95.0,0.0,238
+HUM_226,Group 6: Ecology & Earth Systems Science,Soil Microbial Community Resilience Following Wildfire Disturbances,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.1,29.0,0.0,95.0,0.0,235
+HUM_227,Group 6: Ecology & Earth Systems Science,Mangrove Ecosystem Carbon Sequestration in Blue Carbon Reservoirs,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.6,42.6,42.6,0.0,95.0,0.0,238
+HUM_228,Group 6: Ecology & Earth Systems Science,Hydrological Cycle Intensification in Polar and Alpine Watersheds,HUMAN_AUTHORED,Likely Human-Authored,21.9,29.2,29.3,29.2,0.0,95.0,0.0,237
+HUM_229,Group 6: Ecology & Earth Systems Science,Ecosystem Services Valuation and Natural Capital Accounting,HUMAN_AUTHORED,Likely Human-Authored,21.8,29.1,29.2,29.1,0.0,95.0,0.0,235
+HUM_230,Group 6: Ecology & Earth Systems Science,Pollinator Network Robustness in Fragmented Agricultural Landscapes,HUMAN_AUTHORED,Surely Generated with AI,90.0,81.4,81.4,81.4,0.0,95.0,0.0,235
+HUM_231,Group 6: Ecology & Earth Systems Science,Phytoplankton Bloom Dynamics and Marine Carbon Pump Sequestration,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,228
+HUM_232,Group 6: Ecology & Earth Systems Science,Wetland Restoration Hydrology and Heavy Metal Phytoremediation,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.7,42.7,42.7,0.0,95.0,0.0,235
+HUM_233,Group 6: Ecology & Earth Systems Science,Arid Ecosystem Desertification Dynamics and Dryland Restoration,HUMAN_AUTHORED,Likely Human-Authored,32.2,42.9,42.9,42.9,0.0,95.0,0.0,235
+HUM_234,Group 6: Ecology & Earth Systems Science,Avian Migration Phenology Shifts in Response to Climate Warming,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.6,42.6,42.6,0.0,95.0,0.0,241
+HUM_235,Group 6: Ecology & Earth Systems Science,Deep-Sea Hydrothermal Vent Microbial Symbiosis and Chemolithoautotrophy,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_236,Group 6: Ecology & Earth Systems Science,Forest Fire Regimes and Fuel Load Management in Mediterranean Biomes,HUMAN_AUTHORED,Likely Human-Authored,21.9,29.2,29.3,29.1,0.0,95.0,0.0,241
+HUM_237,Group 6: Ecology & Earth Systems Science,Groundwater Aquifer Depletion and Land Subsidence Geomechanics,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
+HUM_238,Group 6: Ecology & Earth Systems Science,Invasive Species Colonization Dynamics in Island Biogeography,HUMAN_AUTHORED,Likely Human-Authored,32.0,42.7,42.7,42.7,0.0,95.0,0.0,235
+HUM_239,Group 6: Ecology & Earth Systems Science,River Basin Sediment Transport Mechanics and Estuarine Deltas,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,228
+HUM_240,Group 6: Ecology & Earth Systems Science,Microplastic Accumulation in Marine Pelagic Food Webs,HUMAN_AUTHORED,Likely Human-Authored,22.2,29.6,29.6,29.6,0.0,95.0,0.0,225
