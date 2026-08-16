@@ -1,2 +1,63 @@
-echo ".env" >> .gitignore
+# Environment variables & secrets (CRITICAL - DO NOT COMMIT)
 .env
+.env.*
+*.env
+*.key
+secret.key
+fernet.key
+credentials.json
+secrets/
+keys/
+
+# Python & bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing & code quality
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.deepeval/
+
+# Databases & local caches
+DB/
+*.sqlite3
+*.db
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
