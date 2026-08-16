@@ -1,6 +1,6 @@
-"""Unit tests for Sentence ClozeMasker with [1], [2] Numbered Placeholders."""
+"""Unit tests for Sentence ClozeMasker with [1], [2] Numbered Placeholders and Metadata Extraction."""
 
-from src.engine.cloze_masker import ClozeMasker, ClozeMaskResult
+from src.engine.cloze_masker import ClozeMasker, ClozeMaskResult, SentenceMetadata
 
 
 def test_split_sentences():
@@ -10,6 +10,19 @@ def test_split_sentences():
     assert sentences[0].startswith("Large language")
     assert sentences[1].startswith("They optimize")
     assert sentences[2].startswith("However, humans")
+
+
+def test_extract_sentence_metadata():
+    sentence = "Known for his calm personality, intellectual honesty, and understated style of leadership, he served as the Prime Minister of India from 2004 to 2014."
+    meta = ClozeMasker.extract_sentence_metadata(sentence)
+    
+    assert isinstance(meta, SentenceMetadata)
+    assert meta.word_count >= 20
+    assert meta.space_count >= 20
+    assert "," in meta.special_characters
+    assert "." in meta.special_characters
+    assert meta.punctuation_counts["comma"] >= 3
+    assert meta.avg_word_length > 3.0
 
 
 def test_mask_pass_1_sparse():
@@ -27,6 +40,7 @@ def test_mask_pass_1_sparse():
     assert len(result.spans) >= 1
     assert "[1]" in result.masked_text
     assert result.spans[0].original_text == "Second sentence that should be masked in sparse mode."
+    assert result.spans[0].metadata.word_count >= 8
 
 
 def test_mask_pass_2_alternate():
@@ -45,3 +59,4 @@ def test_mask_pass_2_alternate():
     assert "[2]" in result.masked_text
     assert result.spans[0].placeholder == "[1]"
     assert result.spans[1].placeholder == "[2]"
+    assert result.spans[0].metadata.word_count > 0

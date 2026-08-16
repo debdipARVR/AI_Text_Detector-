@@ -1,11 +1,14 @@
-"""Two-Pass Complete Sentence Cloze Congruence AI Text Detector with DeepEval.
+"""Two-Pass Complete Sentence Cloze Congruence AI Text Detector with Metadata Precision.
 
 Executes two structured sentence-level masking passes:
 - Pass 1 (Sparse): Removes 1 sentence every 4 lines.
 - Pass 2 (Alternate): Removes alternate sentences every 2 lines.
 
-Evaluates propositional Meaning Similarity (Highest Priority via DeepEval),
-Semantic Cosine Similarity, and Lexical Overlap for both passes.
+Extracts and enforces exact structural metadata:
+- Target Word Count vs Infilled Word Count
+- Space Count and Spacing Frequency
+- Special Characters & Punctuation Profile
+- 40% Meaning + 40% Cosine + 10% Semantic + 10% Lexical weights
 """
 
 from __future__ import annotations
@@ -14,7 +17,7 @@ import html
 import re
 from typing import Any, Dict, List, Optional
 
-from .cloze_masker import ClozeMasker, ClozeMaskResult, MaskedSpan
+from .cloze_masker import ClozeMasker, ClozeMaskResult, MaskedSpan, SentenceMetadata
 from .metrics import (
     calculate_burstiness,
     classify_span_congruence,
@@ -53,19 +56,7 @@ class ClozeCongruenceDetector:
         model_name: Optional[str] = None,
         temperature: float = 0.0,
     ) -> Dict[str, Any]:
-        """Perform Two-Pass Sentence Cloze AI detection on input text.
-        
-        Args:
-            text: Input text/paragraph to analyze
-            mask_rate: Unused (kept for compatibility)
-            num_passes: Number of passes (1 or 2, default 2)
-            model_name: NVIDIA NIM model (default: z-ai/glm-5.2)
-            temperature: LLM temperature (0.0 for deterministic infill)
-            
-        Returns:
-            Dictionary containing Pass 1, Pass 2, Meaning Similarity, Cosine Similarity,
-            Congruency Scores, and Two-Pass Final Verdict.
-        """
+        """Perform Two-Pass Sentence Cloze AI detection with metadata precision on input text."""
         cleaned_text = text.strip()
         if not cleaned_text:
             return {
@@ -100,6 +91,11 @@ class ClozeCongruenceDetector:
 
             pass1_orig_sentences.append(span.original_text)
             pass1_pred_sentences.append(pred)
+
+            infill_words = len(pred.split())
+            target_words = span.metadata.word_count if span.metadata else len(span.original_text.split())
+            span.infilled_word_count = infill_words
+            span.word_count_delta = infill_words - target_words
 
             cos = compute_cosine_similarity(span.original_text, pred)
             sem = compute_semantic_congruence(span.original_text, pred)
@@ -146,6 +142,11 @@ class ClozeCongruenceDetector:
             pass2_orig_sentences.append(span.original_text)
             pass2_pred_sentences.append(pred)
 
+            infill_words = len(pred.split())
+            target_words = span.metadata.word_count if span.metadata else len(span.original_text.split())
+            span.infilled_word_count = infill_words
+            span.word_count_delta = infill_words - target_words
+
             cos = compute_cosine_similarity(span.original_text, pred)
             sem = compute_semantic_congruence(span.original_text, pred)
             lex = compute_lexical_similarity(span.original_text, pred)
@@ -175,12 +176,11 @@ class ClozeCongruenceDetector:
         p2_score = pass2_eval["congruence_score_percent"]
         verdict_data = compute_two_pass_verdict(p1_score, p2_score)
 
-        # Combined Meaning & Cosine Metrics
         avg_meaning = round((0.50 * pass1_eval["meaning_similarity_percent"]) + (0.50 * pass2_eval["meaning_similarity_percent"]), 1)
         avg_cosine = round((0.50 * pass1_eval["semantic_cosine_percent"]) + (0.50 * pass2_eval["semantic_cosine_percent"]), 1)
+        avg_sem = round((0.50 * pass1_eval["semantic_similarity_percent"]) + (0.50 * pass2_eval["semantic_similarity_percent"]), 1)
         avg_lexical = round((0.50 * pass1_eval["lexical_similarity_percent"]) + (0.50 * pass2_eval["lexical_similarity_percent"]), 1)
 
-        # Render highlighted HTML snippet
         highlighted_html = self._render_highlighted_html(cleaned_text, pass2_mask.spans)
 
         return {
@@ -196,6 +196,7 @@ class ClozeCongruenceDetector:
                 "reconstructed_text": pass1_reconstructed,
                 "meaning_similarity": pass1_eval["meaning_similarity_percent"],
                 "semantic_cosine": pass1_eval["semantic_cosine_percent"],
+                "semantic_similarity": pass1_eval["semantic_similarity_percent"],
                 "lexical_similarity": pass1_eval["lexical_similarity_percent"],
                 "congruence_score": pass1_eval["congruence_score_percent"],
                 "deepeval_reason": pass1_eval["reason"],
@@ -204,8 +205,14 @@ class ClozeCongruenceDetector:
                         "placeholder": s.placeholder,
                         "original_sentence": s.original_text,
                         "predicted_sentence": s.predicted_text,
+                        "target_word_count": s.metadata.word_count if s.metadata else len(s.original_text.split()),
+                        "infilled_word_count": s.infilled_word_count,
+                        "space_count": s.metadata.space_count if s.metadata else 0,
+                        "special_characters": s.metadata.special_characters if s.metadata else [],
+                        "punctuation_counts": s.metadata.punctuation_counts if s.metadata else {},
                         "meaning_similarity": s.meaning_similarity,
                         "semantic_cosine": s.cosine_similarity,
+                        "semantic_similarity": s.semantic_similarity,
                         "lexical_similarity": s.lexical_similarity,
                         "congruence": s.composite_congruence,
                         "status": s.status,
@@ -220,6 +227,7 @@ class ClozeCongruenceDetector:
                 "reconstructed_text": pass2_reconstructed,
                 "meaning_similarity": pass2_eval["meaning_similarity_percent"],
                 "semantic_cosine": pass2_eval["semantic_cosine_percent"],
+                "semantic_similarity": pass2_eval["semantic_similarity_percent"],
                 "lexical_similarity": pass2_eval["lexical_similarity_percent"],
                 "congruence_score": pass2_eval["congruence_score_percent"],
                 "deepeval_reason": pass2_eval["reason"],
@@ -228,8 +236,14 @@ class ClozeCongruenceDetector:
                         "placeholder": s.placeholder,
                         "original_sentence": s.original_text,
                         "predicted_sentence": s.predicted_text,
+                        "target_word_count": s.metadata.word_count if s.metadata else len(s.original_text.split()),
+                        "infilled_word_count": s.infilled_word_count,
+                        "space_count": s.metadata.space_count if s.metadata else 0,
+                        "special_characters": s.metadata.special_characters if s.metadata else [],
+                        "punctuation_counts": s.metadata.punctuation_counts if s.metadata else {},
                         "meaning_similarity": s.meaning_similarity,
                         "semantic_cosine": s.cosine_similarity,
+                        "semantic_similarity": s.semantic_similarity,
                         "lexical_similarity": s.lexical_similarity,
                         "congruence": s.composite_congruence,
                         "status": s.status,
@@ -240,7 +254,7 @@ class ClozeCongruenceDetector:
             "metrics": {
                 "meaning_similarity_avg": avg_meaning,
                 "semantic_cosine_avg": avg_cosine,
-                "semantic_similarity_avg": round((0.50 * pass1_eval["semantic_similarity_percent"]) + (0.50 * pass2_eval["semantic_similarity_percent"]), 1),
+                "semantic_similarity_avg": avg_sem,
                 "word_similarity_avg": avg_lexical,
                 "congruence_avg": verdict_data["combined_congruence_score"],
                 "weights": {
@@ -266,7 +280,7 @@ class ClozeCongruenceDetector:
                 "model_name": model,
                 "client_mode": self.nim_client.get_status()["mode"],
                 "is_live_api": self.nim_client.is_live,
-                "evaluation_framework": "DeepEval Custom Meaning Metric + Cosine Similarity",
+                "evaluation_framework": "DeepEval Meaning Metric + Structural Metadata Matching",
             },
             "primary_masked_text": pass2_mask.masked_text,
             "reconstructed_text": pass2_reconstructed,
@@ -276,7 +290,10 @@ class ClozeCongruenceDetector:
                     "placeholder": s.placeholder,
                     "original": s.original_text,
                     "predicted": s.predicted_text,
+                    "target_word_count": s.metadata.word_count if s.metadata else len(s.original_text.split()),
+                    "infilled_word_count": s.infilled_word_count,
                     "meaning_similarity": s.meaning_similarity,
+                    "semantic_cosine": s.cosine_similarity,
                     "semantic_similarity": s.semantic_similarity,
                     "lexical_similarity": s.lexical_similarity,
                     "congruence": s.composite_congruence,
@@ -288,7 +305,7 @@ class ClozeCongruenceDetector:
         }
 
     def _render_highlighted_html(self, original_text: str, spans: List[MaskedSpan]) -> str:
-        """Render annotated HTML with colored sentence tags."""
+        """Render annotated HTML with colored sentence tags and metadata tooltips."""
         if not spans:
             return html.escape(original_text)
 
@@ -296,21 +313,25 @@ class ClozeCongruenceDetector:
         for s in spans:
             escaped_orig = html.escape(s.original_text)
             escaped_pred = html.escape(s.predicted_text or "")
+            target_w = s.metadata.word_count if s.metadata else len(s.original_text.split())
             
             badge_class = "span-congruent" if s.status == "CONGRUENT" else (
                 "span-partial" if s.status == "PARTIAL" else "span-divergent"
             )
             
             tooltip = (
+                f"Key: {s.placeholder}&#10;"
                 f"Original: {escaped_orig}&#10;"
                 f"NIM Infill: {escaped_pred}&#10;"
-                f"Meaning: {s.meaning_similarity}% | Congruence: {s.composite_congruence}% ({s.status})"
+                f"Target Words: {target_w} | Infilled Words: {s.infilled_word_count}&#10;"
+                f"Meaning (40%): {s.meaning_similarity}% | Cosine (40%): {s.cosine_similarity}%&#10;"
+                f"Congruence: {s.composite_congruence}% ({s.status})"
             )
             
             replacement = (
                 f'<span class="cloze-span {badge_class}" title="{tooltip}" data-mask-id="{s.mask_id}">'
                 f'<span class="span-text">{escaped_orig}</span>'
-                f'<span class="span-badge">Meaning: {s.meaning_similarity}%</span>'
+                f'<span class="span-badge">{s.placeholder} • Words: {target_w} • Meaning: {s.meaning_similarity}%</span>'
                 f'</span>'
             )
             

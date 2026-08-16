@@ -1,4 +1,4 @@
-"""Streamlit Web Application for Two-Pass ClozeCongruence AI Text Detector with DeepEval Meaning Metrics."""
+"""Streamlit Web Application for Two-Pass ClozeCongruence AI Text Detector with DeepEval Meaning & Structural Metadata."""
 
 import os
 import sys
@@ -167,9 +167,10 @@ with st.sidebar:
         "• **Semantic Cosine Similarity**: **40%**\n"
         "• **Semantic Phrasing Alignment**: **10%**\n"
         "• **Word & Lexical Overlap**: **10%**\n\n"
-        "**Two-Pass Strategy:**\n"
-        "• **Pass 1**: 1 sentence removed per 4 lines\n"
-        "• **Pass 2**: Alternate sentences every 2 lines"
+        "**Structural Constraints Passed to NIM:**\n"
+        "• Exact Target Word Count\n"
+        "• Space Count & Frequency\n"
+        "• Special Characters & Punctuation Profile"
     )
 
     # API Credentials & Fernet Keys
@@ -190,11 +191,11 @@ with st.sidebar:
     if status["is_live"]:
         st.success(f"🟢 **Live NIM Connected** ({status['masked_key']})")
     else:
-        st.info("🟡 **Offline Simulation Mode** (Contextual Infill Active)")
+        st.info("🟡 **Offline Simulation Mode** (Contextual Metadata Active)")
 
 # Main Header
 st.markdown('<div class="main-title">Two-Pass DeepEval AI Text Detector 🕵️‍♂️⚡</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Key-Value Paired Sequencing • 40% Meaning • 40% Cosine • 10% Semantic • 10% Lexical</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-title">Exact Word Count Constraints • Metadata Profiling (Spaces & Punctuation) • 40% Meaning • 40% Cosine</div>', unsafe_allow_html=True)
 
 # App Tabs
 tab_detect, tab_humanize, tab_security = st.tabs([
@@ -219,7 +220,7 @@ with tab_detect:
             "Enter text paragraph to evaluate:",
             value=default_text,
             height=300,
-            placeholder="Paste complete paragraph here. The detector will execute Pass 1 and Pass 2, asking NVIDIA NIM to infill numbered blanks [1], [2], [3] and comparing each pair with 40% Meaning + 40% Cosine weights..."
+            placeholder="Paste complete paragraph here. The detector will execute Pass 1 and Pass 2, passing exact word counts, spaces, and punctuation constraints for each [1], [2], [3]..."
         )
 
         words_count = len(input_text.strip().split()) if input_text.strip() else 0
@@ -231,7 +232,7 @@ with tab_detect:
         st.subheader("2. Evaluation & Congruency Breakdown")
 
         if btn_detect and input_text.strip():
-            with st.spinner(f"Executing Key-Value Paired Infilling with {selected_model} & DeepEval Meaning Metric..."):
+            with st.spinner(f"Executing Key-Value Infilling with {selected_model} & Structural Metadata Matching..."):
                 detector = ClozeCongruenceDetector(nim_client=client)
                 res = detector.analyze(
                     text=input_text,
@@ -246,7 +247,6 @@ with tab_detect:
             pass2 = res["pass_2"]
             metrics = res["metrics"]
 
-            # Style classification
             score_cls = "score-ai" if ai_prob >= 70 else ("score-mixed" if ai_prob >= 40 else "score-human")
             badge_cls = "badge-ai" if ai_prob >= 70 else ("badge-mixed" if ai_prob >= 40 else "badge-human")
 
@@ -291,19 +291,20 @@ with tab_detect:
                 </div>
                 """, unsafe_allow_html=True)
 
-            # Infill Sentences Breakdown Table
-            st.markdown("#### 📋 Sentence Pairwise Comparison Breakdown")
+            # Infill Sentences Breakdown Table with Metadata
+            st.markdown("#### 📋 Sentence Pairwise Comparison & Metadata Breakdown")
             spans = pass2.get("spans", [])
             if spans:
                 table_data = [
                     {
-                        "Placeholder": s["placeholder"],
+                        "Key": s["placeholder"],
                         "Original Sentence": s["original_sentence"],
                         "NIM Infilled Sentence": s["predicted_sentence"],
+                        "Words (Target / Infill)": f"{s.get('target_word_count', 0)} / {s.get('infilled_word_count', 0)}",
+                        "Spaces": s.get("space_count", 0),
+                        "Special Chars": ", ".join(set(s.get("special_characters", []))) or "None",
                         "Meaning (40%)": f"{s['meaning_similarity']}%",
                         "Cosine (40%)": f"{s['semantic_cosine']}%",
-                        "Semantic (10%)": f"{s.get('semantic_similarity', 50.0)}%",
-                        "Lexical (10%)": f"{s['lexical_similarity']}%",
                         "Congruence": f"{s['congruence']}%",
                         "Status": s["status"],
                     }
@@ -388,7 +389,7 @@ with tab_security:
 st.markdown("---")
 st.markdown(
     "<div style='text-align: center; color: #64748b; font-size: 0.85rem;'>"
-    "Two-Pass ClozeCongruence AI Detector • Powered by DeepEval Meaning Metrics & NVIDIA NIM • "
+    "Two-Pass ClozeCongruence AI Detector • Powered by DeepEval Meaning Metrics & Structural Metadata Matching • "
     "<a href='https://github.com/debdipARVR/AI_Text_Detector-' target='_blank'>GitHub Repo</a>"
     "</div>",
     unsafe_allow_html=True,

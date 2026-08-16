@@ -1,7 +1,7 @@
-"""NVIDIA NIM API Client for Cloze Sentence Infilling with Key-Value Paired Sequencing.
+"""NVIDIA NIM API Client for Cloze Sentence Infilling with Metadata Constraints.
 
-Integrates with NVIDIA NIM endpoints (https://integrate.api.nvidia.com/v1)
-supporting z-ai/glm-5.2, thinkingmachines/inkling, and numbered placeholder [1], [2] completions.
+Passes exact target word counts, spacing frequency, and special character
+constraints to the NIM LLM to generate perfectly fitting sentences for each [x].
 """
 
 from __future__ import annotations
@@ -57,7 +57,7 @@ NIM_BASE_URL = "https://integrate.api.nvidia.com/v1"
 
 
 class NvidiaNIMClient:
-    """Client for querying NVIDIA NIM endpoints with key-value paired sentence sequencing."""
+    """Client for querying NVIDIA NIM endpoints with word-count & structural metadata constraints."""
 
     def __init__(
         self,
@@ -109,11 +109,7 @@ class NvidiaNIMClient:
         model_name: Optional[str] = None,
         temperature: float = 0.0,
     ) -> Dict[str, str]:
-        """Generate cloze infilling predictions with strict Key-Value paired mapping.
-        
-        Returns:
-            Dictionary mapping placeholder key (e.g. '[1]', '[2]') -> predicted complete sentence string
-        """
+        """Generate cloze infilling predictions with strict metadata and word-count matching."""
         if not spans:
             return {}
 
@@ -135,33 +131,37 @@ class NvidiaNIMClient:
         model: str,
         temperature: float,
     ) -> Dict[str, str]:
-        """Call NVIDIA NIM chat completions with strict Key-Value paired sequencing."""
-        mask_list_desc = "\n".join([f"- Key {s.placeholder}: (Position {s.mask_id})" for s in spans])
+        """Call NVIDIA NIM chat completions passing exact word count and structural metadata constraints."""
+        mask_constraints_list: List[str] = []
+        for s in spans:
+            constraint_text = s.metadata.to_prompt_constraint() if s.metadata else f"Target: ~{len(s.original_text.split())} words"
+            mask_constraints_list.append(f"- Placeholder Key {s.placeholder}:\n    • Constraints: {constraint_text}")
+
+        constraints_formatted = "\n".join(mask_constraints_list)
 
         system_prompt = (
-            "You are a specialized linguistic sentence completion engine. "
-            "You will be given a text where certain complete sentences have been removed and replaced with numbered placeholders like [1], [2], [3], etc.\n\n"
-            "TASK: Reconstruct and output the exact single complete sentence that belongs in each placeholder [x] "
-            "to make the entire essay logically coherent, grammatically sound, and contextually fluid.\n\n"
-            "STRICT KEY-VALUE JSON OUTPUT REQUIREMENT:\n"
-            "You must return a JSON object with a single root key 'infill' containing a dictionary of exact key-value pairs.\n"
-            "Each key MUST match the exact placeholder tag (e.g. '[1]', '[2]') or number (e.g. '1', '2'), and each value MUST be a single complete sentence.\n\n"
-            "Example response:\n"
+            "You are a specialized linguistic sentence completion engine with strict structural precision.\n"
+            "You will be given an essay where certain complete sentences have been removed and replaced with numbered placeholders like [1], [2], [3], etc.\n\n"
+            "CRITICAL STRUCTURAL & METADATA REQUIREMENTS:\n"
+            "1. Exact Word Count: For each placeholder [x], generate a sentence with the EXACT number of words specified in the constraints.\n"
+            "2. Spacing & Punctuation Profile: Keep spacing frequency, commas, colons, dashes, and tone completely natural and harmonious with the surrounding paragraph.\n"
+            "3. Seamless Context Fit: The reconstructed sentence must form a continuous, cohesive paragraph with the preceding and succeeding context.\n"
+            "4. Return STRICT JSON: Return a JSON object with a root key 'infill' containing key-value pairs matching each placeholder key.\n\n"
+            "Example response format:\n"
             "```json\n"
             "{\n"
             '  "infill": {\n'
             '    "[1]": "Known for his calm personality, intellectual honesty, and understated style of leadership, he served as Prime Minister from 2004 to 2014.",\n'
-            '    "[2]": "The Partition of India in 1947 profoundly affected his early life as his family moved to India.",\n'
-            '    "[3]": "It was as Finance Minister in 1991 that he initiated major economic reforms."\n'
+            '    "[2]": "The Partition of India in 1947 profoundly affected his early life as his family moved to India."\n'
             "  }\n"
             "}\n"
             "```"
         )
 
         user_prompt = (
-            f"Here is the text with missing sentence placeholders:\n\n{masked_text}\n\n"
-            f"Please provide the missing single sentence for each placeholder:\n{mask_list_desc}\n\n"
-            "Respond strictly in the specified JSON Key-Value format."
+            f"Here is the text containing missing sentence placeholders:\n\n{masked_text}\n\n"
+            f"STRUCTURAL METADATA CONSTRAINTS FOR EACH PLACEHOLDER:\n{constraints_formatted}\n\n"
+            "Generate the exact replacement sentence for each placeholder matching its target word count and metadata profile. Respond strictly in JSON."
         )
 
         response = self.client.chat.completions.create(
@@ -171,7 +171,7 @@ class NvidiaNIMClient:
                 {"role": "user", "content": user_prompt},
             ],
             temperature=temperature,
-            max_tokens=800,
+            max_tokens=900,
         )
 
         raw_content = response.choices[0].message.content or ""
@@ -216,7 +216,6 @@ class NvidiaNIMClient:
                 escaped_key = re.escape(span.placeholder)
                 num_key = str(span.mask_id)
                 
-                # Match '[1]': "sentence" or 1: "sentence" or [MASK_1]: "sentence"
                 pattern = rf'(?:{escaped_key}|\[?{num_key}\]?|\[?MASK_{num_key}\]?)\s*[\'"]?\s*[:=]\s*[\'"]?([^\n\r"}}\]]+)'
                 m = re.search(pattern, content, re.IGNORECASE)
                 if m:
@@ -232,11 +231,12 @@ class NvidiaNIMClient:
         return predictions
 
     def _infill_simulated(self, spans: List[MaskedSpan], context: str = "") -> Dict[str, str]:
-        """Intelligent context-aware simulation for offline / demo mode."""
+        """Intelligent context-aware simulation respecting word count and metadata in demo mode."""
         simulated: Dict[str, str] = {}
         
         for span in spans:
             orig = span.original_text
+            target_words = span.metadata.word_count if span.metadata and span.metadata.word_count > 0 else len(orig.split())
             orig_lower = orig.lower()
             
             ai_markers = ["furthermore", "moreover", "crucial", "testament", "pivotal", "delve", "foster", "landscape", "nuanced", "multifaceted", "paradigm", "synthesize", "transformative", "artificial intelligence"]
@@ -246,19 +246,19 @@ class NvidiaNIMClient:
             has_human_marker = any(m in orig_lower for m in human_markers)
 
             if has_ai_marker and not has_human_marker:
-                # Highly predictable AI completion
                 sim_text = orig
                 sim_text = re.sub(r'\badditionally\b', 'furthermore', sim_text, flags=re.IGNORECASE)
                 sim_text = re.sub(r'\bimportant\b', 'crucial', sim_text, flags=re.IGNORECASE)
                 sim_text = re.sub(r'\bshows\b', 'demonstrates', sim_text, flags=re.IGNORECASE)
                 simulated[span.placeholder] = sim_text
             else:
-                # Context-aware completion reflecting natural variation
                 words = orig.split()
                 if len(words) > 6:
-                    # Realistic paraphrase
                     first_part = " ".join(words[:len(words)//2])
-                    simulated[span.placeholder] = f"{first_part}, which contributed significantly to the broader historical and institutional developments."
+                    filler_words = ["which", "significantly", "helped", "advance", "broader", "institutional", "and", "economic", "development", "goals", "nationwide"]
+                    needed_extra = max(2, target_words - len(words)//2)
+                    suffix_filler = " ".join(filler_words[:needed_extra])
+                    simulated[span.placeholder] = f"{first_part}, {suffix_filler}."
                 else:
                     simulated[span.placeholder] = f"This aspect played a notable role in subsequent historical events."
 
